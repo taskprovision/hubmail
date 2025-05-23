@@ -1,0 +1,69 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Email Intelligence Dashboard",
+    "tags": ["email", "automation"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Emails Processed",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(emails_processed_total[1h])",
+            "legendFormat": "Last Hour"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Email Classification",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "email_classification_total",
+            "legendFormat": "{{classification}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Processing Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(email_processing_duration_seconds_sum[5m]) / rate(email_processing_duration_seconds_count[5m])",
+            "legendFormat": "Avg Processing Time"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Email Volume by Hour",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "increase(emails_received_total[1h])",
+            "legendFormat": "Emails/Hour"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+      }
+    ],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

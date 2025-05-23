@@ -1,0 +1,250 @@
+[
+    {
+        "id": "main-tab",
+        "type": "tab",
+        "label": "Email Processing",
+        "disabled": false
+    },
+    {
+        "id": "email-input",
+        "type": "inject",
+        "z": "main-tab",
+        "name": "Simulate Email",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"from\":\"test@example.com\",\"subject\":\"URGENT: Server Issue\",\"body\":\"Our production server is down. Please investigate immediately.\",\"attachments\":[]}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "extract-content"
+            ]
+        ]
+    },
+    {
+        "id": "extract-content",
+        "type": "function",
+        "z": "main-tab",
+        "name": "Extract Email Content",
+        "func": "const email = msg.payload;\n\nmsg.emailData = {\n    from: email.from,\n    subject: email.subject,\n    body: email.body,\n    timestamp: new Date().toISOString(),\n    hasAttachments: email.attachments && email.attachments.length > 0\n};\n\n// Prepare for LLM analysis\nmsg.llmPrompt = `Analyze this email and classify it:\n\nFrom: ${email.from}\nSubject: ${email.subject}\nBody: ${email.body}\n\nClassify as one of: URGENT, BUSINESS, SPAM, PERSONAL\nProvide reasoning and confidence score.\n\nRespond in JSON format:\n{\n  \"classification\": \"URGENT|BUSINESS|SPAM|PERSONAL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"explanation\",\n  \"suggested_action\": \"action to take\"\n}`;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 100,
+        "wires": [
+            [
+                "llm-analyze"
+            ]
+        ]
+    },
+    {
+        "id": "llm-analyze",
+        "type": "http request",
+        "z": "main-tab",
+        "name": "LLM Classification",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://ollama:11434/api/generate",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 580,
+        "y": 100,
+        "wires": [
+            [
+                "parse-classification"
+            ]
+        ]
+    },
+    {
+        "id": "parse-classification",
+        "type": "function",
+        "z": "main-tab",
+        "name": "Parse LLM Response",
+        "func": "try {\n    const response = msg.payload;\n    let analysis;\n    \n    // Try to parse JSON from LLM response\n    if (response.response) {\n        const jsonMatch = response.response.match(/\\{[^}]+\\}/);\n        if (jsonMatch) {\n            analysis = JSON.parse(jsonMatch[0]);\n        } else {\n            // Fallback parsing\n            analysis = {\n                classification: response.response.includes('URGENT') ? 'URGENT' : 'BUSINESS',\n                confidence: 0.8,\n                reasoning: 'Parsed from text response',\n                suggested_action: 'Review manually'\n            };\n        }\n    }\n    \n    msg.analysis = analysis;\n    msg.classification = analysis.classification;\n    \n    // Update metrics\n    msg.metrics = {\n        emails_processed_total: 1,\n        classification: analysis.classification,\n        confidence: analysis.confidence,\n        processing_time: Date.now() - new Date(msg.emailData.timestamp).getTime()\n    };\n    \n    return msg;\n    \n} catch (error) {\n    msg.error = error.message;\n    msg.classification = 'ERROR';\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 100,
+        "wires": [
+            [
+                "route-by-classification"
+            ]
+        ]
+    },
+    {
+        "id": "route-by-classification",
+        "type": "switch",
+        "z": "main-tab",
+        "name": "Route by Classification",
+        "property": "classification",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "URGENT",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "BUSINESS",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SPAM",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 1040,
+        "y": 100,
+        "wires": [
+            [
+                "urgent-handler"
+            ],
+            [
+                "business-handler"
+            ],
+            [
+                "spam-handler"
+            ]
+        ]
+    },
+    {
+        "id": "urgent-handler",
+        "type": "function",
+        "z": "main-tab",
+        "name": "Urgent Alert",
+        "func": "msg.payload = {\n    text: `🚨 URGENT EMAIL ALERT 🚨\\n\\nFrom: ${msg.emailData.from}\\nSubject: ${msg.emailData.subject}\\nConfidence: ${msg.analysis.confidence}\\nReason: ${msg.analysis.reasoning}\\n\\nAction: ${msg.analysis.suggested_action}`\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1280,
+        "y": 60,
+        "wires": [
+            [
+                "log-urgent"
+            ]
+        ]
+    },
+    {
+        "id": "business-handler",
+        "type": "function",
+        "z": "main-tab",
+        "name": "Business Processing",
+        "func": "msg.payload = {\n    action: 'auto_reply',\n    template: 'business_acknowledgment',\n    data: {\n        from: msg.emailData.from,\n        subject: 'Re: ' + msg.emailData.subject,\n        body: `Thank you for your email. We have received your message and will respond within 24 hours.\\n\\nBest regards,\\nAutomated Response System`\n    }\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1280,
+        "y": 100,
+        "wires": [
+            [
+                "log-business"
+            ]
+        ]
+    },
+    {
+        "id": "spam-handler",
+        "type": "function",
+        "z": "main-tab",
+        "name": "Spam Filter",
+        "func": "msg.payload = {\n    action: 'quarantine',\n    reason: msg.analysis.reasoning,\n    confidence: msg.analysis.confidence\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1280,
+        "y": 140,
+        "wires": [
+            [
+                "log-spam"
+            ]
+        ]
+    },
+    {
+        "id": "log-urgent",
+        "type": "debug",
+        "z": "main-tab",
+        "name": "Urgent Log",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1500,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "log-business",
+        "type": "debug",
+        "z": "main-tab",
+        "name": "Business Log",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1500,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "log-spam",
+        "type": "debug",
+        "z": "main-tab",
+        "name": "Spam Log",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1500,
+        "y": 140,
+        "wires": []
+    }
+]

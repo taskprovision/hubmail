@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node-red'
+    static_configs:
+      - targets: ['node-red:1880']
+    scrape_interval: 30s
+
+  - job_name: 'email-metrics'
+    static_configs:
+      - targets: ['node-red:1880']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
