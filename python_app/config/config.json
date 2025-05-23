@@ -1,0 +1,60 @@
+{
+  "api": {
+    "port": 8000,
+    "host": "localhost",
+    "debug": true,
+    "workers": 4,
+    "timeout": 60,
+    "cors": {
+      "allowed_origins": ["*"],
+      "allowed_methods": ["GET", "POST", "PUT", "DELETE"],
+      "allowed_headers": ["*"]
+    }
+  },
+  "ui": {
+    "port": 8501,
+    "host": "localhost",
+    "theme": "dark",
+    "page_title": "HubMail",
+    "page_icon": "✉️"
+  },
+  "database": {
+    "host": "postgres-db",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "database": "hubmail",
+    "pool_size": 10,
+    "max_overflow": 20
+  },
+  "email": {
+    "smtp_server": "smtp.example.com",
+    "smtp_port": 587,
+    "sender_email": "noreply@hubmail.example.com",
+    "use_tls": true,
+    "templates_dir": "templates/email"
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "logs/hubmail.log",
+    "rotate": true,
+    "max_size": "10MB",
+    "backup_count": 5
+  },
+  "llm": {
+    "provider": "ollama",
+    "model": "llama3",
+    "host": "ollama",
+    "port": 11434,
+    "timeout": 120,
+    "max_tokens": 2048
+  },
+  "security": {
+    "jwt_secret": "REPLACE_WITH_SECURE_SECRET",
+    "token_expiry": 86400,
+    "password_min_length": 8,
+    "require_special_chars": true,
+    "require_numbers": true
+  }
+}

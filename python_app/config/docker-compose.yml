@@ -1,0 +1,91 @@
+version: '3'
+
+services:
+  email-app:
+    image: hubmail/email-service:latest
+    container_name: email-app
+    ports:
+      - "3001:3001"
+    environment:
+      - API_PORT=3001
+      - DEBUG=true
+    networks:
+      - hubmail_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api-app:
+    image: hubmail/api-service:latest
+    container_name: api-app
+    ports:
+      - "8000:8000"
+    environment:
+      - API_PORT=8000
+      - DEBUG=true
+    networks:
+      - hubmail_network
+    depends_on:
+      - postgres-db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ui-app:
+    image: hubmail/ui-service:latest
+    container_name: ui-app
+    ports:
+      - "8501:8501"
+    environment:
+      - UI_PORT=8501
+      - API_URL=http://api-app:8000
+    networks:
+      - hubmail_network
+    depends_on:
+      - api-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres-db:
+    image: postgres:13
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=hubmail
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hubmail_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - hubmail_network
+
+networks:
+  hubmail_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  ollama_data:

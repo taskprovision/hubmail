@@ -6,6 +6,10 @@ import yaml
 import json
 import streamlit as st
 from typing import Dict, List, Any, Optional, Tuple
+from modules.env_loader import load_env_vars
+
+# Load environment variables
+env_vars = load_env_vars()
 
 def load_config_files(directory_path: str) -> Dict[str, Dict[str, Any]]:
     """Load all configuration files from a directory"""

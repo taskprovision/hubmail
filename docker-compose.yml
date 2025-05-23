@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Python-based application with FastAPI, Streamlit, and Prefect
   hubmail-app:

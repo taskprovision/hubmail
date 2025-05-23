@@ -10,6 +10,48 @@ from datetime import datetime
 import streamlit as st
 from modules.docker_utils import get_container_ports
 
+def check_container_exists(container_name: str) -> bool:
+    """Check if a container exists"""
+    try:
+        result = subprocess.run(
+            ['docker', 'ps', '-a', '--format', '{{.Names}}', '--filter', f'name={container_name}'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return container_name in result.stdout.strip().split('\n')
+    except Exception:
+        return False
+
+def find_alternative_containers(container_name: str) -> List[str]:
+    """Find alternative containers with similar names"""
+    alternatives = []
+    
+    try:
+        # Get all container names
+        result = subprocess.run(
+            ['docker', 'ps', '-a', '--format', '{{.Names}}'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            all_containers = result.stdout.strip().split('\n')
+            
+            # Find containers with similar names
+            for name in all_containers:
+                # Skip exact match
+                if name == container_name:
+                    continue
+                    
+                # Check if container_name is a substring of name or vice versa
+                if container_name in name or name in container_name:
+                    alternatives.append(name)
+        
+        return alternatives
+    except Exception:
+        return []
+
 def check_service_status(service_name: str, service_config: Dict[str, Any]) -> Dict[str, Any]:
     """Check the status of a service based on its configuration"""
     # Get container name from service config or use service name as fallback
@@ -30,6 +72,19 @@ def check_service_status(service_name: str, service_config: Dict[str, Any]) -> D
         "container_name": container_name,
         "service_name": service_name
     }
+    
+    # Check if container exists
+    if not check_container_exists(container_name):
+        status["status"] = "stopped"
+        status["status_code"] = 0
+        status["error"] = "Container does not exist"
+        
+        # Find alternative containers
+        alternatives = find_alternative_containers(container_name)
+        if alternatives:
+            status["alternatives"] = alternatives
+        
+        return status
     
     # Extract port mappings and set appropriate URLs for health checks
     try:
@@ -112,12 +167,67 @@ def get_all_service_statuses(services_config: Dict[str, Dict[str, Any]]) -> Dict
     
     return service_statuses
 
+# Import the Docker Compose finder module
+import sys
+import os
+
+# Add parent directory to path to import docker_compose_finder
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from modules.docker_compose_finder import get_all_services, find_docker_compose_files
+
 def load_services_config() -> Dict[str, Dict[str, Any]]:
-    """Load services configuration from check_status.sh script or use hardcoded defaults"""
+    """Load services configuration from Docker Compose files and check_status.sh script"""
     services = {}
     
     try:
-        # Try to run the check_status.sh script to get service information
+        # First, try to get services from Docker Compose files
+        try:
+            # Find all Docker Compose files in the project
+            docker_compose_files = find_docker_compose_files()
+            
+            if docker_compose_files:
+                # Get services from all Docker Compose files
+                compose_services = get_all_services()
+                
+                # Convert Docker Compose services to our format
+                for service_name, service_info in compose_services.items():
+                    container_name = service_info.get('container_name', service_name)
+                    
+                    # Determine port and health URL based on service configuration
+                    port = None
+                    health_url = None
+                    
+                    # Extract port from port mappings
+                    ports = service_info.get('ports', [])
+                    for port_mapping in ports:
+                        if isinstance(port_mapping, str) and ':' in port_mapping:
+                            # Format: "host_port:container_port"
+                            host_port = port_mapping.split(':')[0]
+                            port = host_port
+                            break
+                    
+                    # Determine health URL based on service name and port
+                    if port:
+                        if 'api' in service_name.lower():
+                            health_url = f"http://localhost:{port}/health"
+                        elif 'ui' in service_name.lower() or 'web' in service_name.lower():
+                            health_url = f"http://localhost:{port}"
+                    
+                    # Create service entry
+                    services[service_name] = {
+                        "container_name": container_name,
+                        "health_url": health_url,
+                        "port": port,
+                        "source": service_info.get('source_file', 'Docker Compose')
+                    }
+                
+                if services:
+                    st.sidebar.success(f"Loaded services from {len(docker_compose_files)} Docker Compose files")
+                    return services
+        except Exception as e:
+            st.sidebar.warning(f"Error loading services from Docker Compose: {str(e)}")
+        
+        # If Docker Compose files don't provide services, try check_status.sh
         try:
             result = subprocess.run(
                 ['./check_status.sh', '--json'],
@@ -134,10 +244,12 @@ def load_services_config() -> Dict[str, Dict[str, Any]]:
                 services[service_name] = {
                     "container_name": service_info.get("container_name", service_name),
                     "health_url": service_info.get("health_url"),
-                    "port": service_info.get("port")
+                    "port": service_info.get("port"),
+                    "source": "check_status.sh"
                 }
                 
             if services:
+                st.sidebar.success("Loaded services from check_status.sh")
                 return services
         except Exception as e:
             # If script execution fails, fall back to hardcoded services
@@ -148,30 +260,36 @@ def load_services_config() -> Dict[str, Dict[str, Any]]:
             "Email Service": {
                 "container_name": "email-app",
                 "health_url": "http://localhost:3001/health",
-                "port": "3001"
+                "port": "3001",
+                "source": "Default configuration"
             },
             "API Service": {
                 "container_name": "api-app",
                 "health_url": "http://localhost:8000/health",
-                "port": "8000"
+                "port": "8000",
+                "source": "Default configuration"
             },
             "UI Service": {
                 "container_name": "ui-app",
                 "health_url": "http://localhost:8501",
-                "port": "8501"
+                "port": "8501",
+                "source": "Default configuration"
             },
             "Database": {
                 "container_name": "postgres-db",
                 "health_url": None,
-                "port": "5432"
+                "port": "5432",
+                "source": "Default configuration"
             },
             "Ollama": {
-                "container_name": "ollama",
-                "health_url": "http://localhost:11434",
-                "port": "11434"
+                "container_name": "email-ollama",
+                "health_url": "http://localhost:11436",
+                "port": "11436",
+                "source": "Default configuration"
             }
         }
         
+        st.sidebar.info("Using default service configuration")
         return services
     except Exception as e:
         st.sidebar.error(f"Error loading services configuration: {str(e)}")
