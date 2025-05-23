@@ -165,6 +165,7 @@ services:
       - ./config-dashboard:/app
       - ./.env:/app/.env:ro
       - ./docker-compose.yml:/app/docker-compose.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Mount Docker socket
     environment:
       - PYTHONUNBUFFERED=1
     networks:
