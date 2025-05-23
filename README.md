@@ -1,6 +1,6 @@
-# HubMail - Email Intelligence Hub 
+# HubMail - Email Automation System
 
-Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitoringu w czasie rzeczywistym.
+Automated email processing and classification using LLM technology with real-time monitoring.
 
 ## 📑 Dokumentacja
 
@@ -16,7 +16,9 @@ Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitori
 - 🤖 **AI Classification**: Automatyczna klasyfikacja emaili (URGENT/BUSINESS/SPAM/PERSONAL)
 - 📊 **Real-time Monitoring**: Dashboard z metrykami w Grafana
 - 🔄 **Process Automation**: Automatyczne odpowiedzi i routing emaili
-- 📈 **Analytics**: Szczegółowe analizy wzorców emailowych
+- 📈 **Analytics**: Szczegółowe analizy wzorów emailowych
+- ⚙️ **Configuration Dashboard**: Wizualizacja konfiguracji systemu i zmiennych środowiskowych
+- 📱 **Responsive UI**: Nowoczesny interfejs użytkownika oparty na Streamlit
 
 ## 🚀 Szybki Start
 
@@ -46,12 +48,42 @@ Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitori
 
 | Usługa | URL | Domyślne dane logowania |
 |--------|-----|-------------------------|
+| **Python API** | http://localhost:3001 | - |
+| **Dashboard** | http://localhost:8501 | - |
+| **Config Dashboard** | http://localhost:8502 | - |
 | **Node-RED** | http://localhost:1880 | - |
 | **Grafana** | http://localhost:3000 | admin/admin |
 | **Prometheus** | http://localhost:9090 | - |
 | **Ollama** | http://localhost:11436 | - |
 
 ## ⚙️ Konfiguracja
+
+### Panel Konfiguracyjny
+
+System zawiera dedykowany panel konfiguracyjny, który pozwala na wizualizację i zarządzanie konfiguracją systemu. Panel ten dostępny jest pod adresem http://localhost:8502 lub można go otworzyć za pomocą komendy:
+
+```bash
+make config-ui
+```
+
+Panel konfiguracyjny oferuje:
+
+- **Wizualizację usług** - graf zależności między usługami
+- **Szczegóły konfiguracji** - pełne informacje o portach, wolumenach i zmiennych środowiskowych
+- **Wyszukiwanie zmiennych** - łatwe wyszukiwanie zmiennych środowiskowych
+- **Renderowanie wartości** - podgląd rzeczywistych wartości zmiennych używanych w `docker-compose.yml`
+
+Aby otworzyć wszystkie panele na raz, użyj:
+
+```bash
+make all-ui
+```
+
+Aby uruchomić wszystkie usługi i otworzyć wszystkie panele jednocześnie:
+
+```bash
+make dashboard
+```
 
 ### Konfiguracja Email
 
@@ -68,6 +100,12 @@ EMAIL_USE_SSL=true
 # Inne ustawienia
 LLM_MODEL=llama2:7b
 LLM_TEMPERATURE=0.3
+```
+
+Aby zaktualizować plik `.env` o nowe zmienne z `.env.example` bez nadpisywania istniejących wartości, użyj:
+
+```bash
+make update-env
 ```
 
 Więcej szczegółów znajdziesz w [dokumentacji konfiguracji](docs/CONFIG.md).
@@ -121,11 +159,24 @@ hubmail/
 │   ├── node-red/          # Konfiguracja Node-RED
 │   ├── ollama/            # Konfiguracja Ollama
 │   └── prometheus/        # Konfiguracja Prometheus
+├── config-dashboard/      # Panel konfiguracyjny
+│   ├── app.py             # Aplikacja Streamlit do wizualizacji konfiguracji
+│   ├── Dockerfile         # Konfiguracja kontenera
+│   └── requirements.txt   # Zależności Pythona
 ├── docs/                  # Dokumentacja
+├── python_app/            # Główna aplikacja Pythona
+│   ├── api/               # API FastAPI
+│   ├── flows/             # Przepływy Prefect
+│   ├── models/            # Modele danych
+│   ├── ui/                # Dashboard Streamlit
+│   ├── utils/             # Narzędzia pomocnicze
+│   ├── Dockerfile         # Konfiguracja kontenera
+│   └── requirements.txt   # Zależności Pythona
 ├── scripts/               # Skrypty pomocnicze
 │   ├── backup.sh          # Skrypt do tworzenia kopii zapasowej
 │   ├── setup.sh           # Skrypt konfiguracyjny
 │   └── test-flow.sh       # Skrypt testowy
 ├── .env.example           # Przykładowy plik zmiennych środowiskowych
 ├── docker-compose.yml     # Konfiguracja Docker Compose
+├── Makefile               # Polecenia make do zarządzania systemem
 └── install.sh             # Skrypt instalacyjny

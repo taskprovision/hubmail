@@ -42,20 +42,26 @@ st.markdown("""
 def parse_env_file(file_path: str) -> Dict[str, str]:
     """Parse .env file and return variables as dictionary"""
     if not os.path.exists(file_path):
+        st.sidebar.error(f"File not found: {file_path}")
         return {}
     
-    return dotenv_values(file_path)
+    try:
+        return dotenv_values(file_path)
+    except Exception as e:
+        st.sidebar.error(f"Error parsing .env file: {str(e)}")
+        return {}
 
 def parse_docker_compose(file_path: str) -> Dict[str, Any]:
     """Parse docker-compose.yml file and return as dictionary"""
     if not os.path.exists(file_path):
+        st.sidebar.error(f"File not found: {file_path}")
         return {}
     
     try:
         with open(file_path, 'r') as f:
             return yaml.safe_load(f)
     except Exception as e:
-        st.error(f"Error parsing docker-compose.yml: {str(e)}")
+        st.sidebar.error(f"Error parsing docker-compose.yml: {str(e)}")
         return {}
 
 def find_env_vars_in_compose(compose_data: Dict[str, Any]) -> List[str]:
@@ -197,8 +203,14 @@ def main():
     st.sidebar.title("Configuration Files")
     
     # File paths
-    env_path = st.sidebar.text_input(".env file path", value="../.env")
-    compose_path = st.sidebar.text_input("docker-compose.yml path", value="../docker-compose.yml")
+    env_path = st.sidebar.text_input(".env file path", value="/app/.env")
+    compose_path = st.sidebar.text_input("docker-compose.yml path", value="/app/docker-compose.yml")
+    
+    # Debug info
+    with st.sidebar.expander("Debug Info"):
+        st.write(f"Current working directory: {os.getcwd()}")
+        st.write(f"Files in current directory: {os.listdir('.')}")
+        st.write(f"Files in /app directory (if exists): {os.listdir('/app') if os.path.exists('/app') else 'Directory not found'}")
     
     # Load files
     env_vars = parse_env_file(env_path)

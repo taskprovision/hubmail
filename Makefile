@@ -1,4 +1,4 @@
-.PHONY: help install dev stop restart status logs clean test backup restore check-api ui config-ui config-logs dashboard all-ui python-deps update-env
+.PHONY: help install dev stop restart restart-config status logs clean test backup restore check-api ui config-ui config-logs dashboard all-ui python-deps update-env debug-config
 
 ## Show this help
 help:
@@ -8,10 +8,12 @@ help:
 	@echo '  dev          Start all services in development mode'
 	@echo '  stop         Stop all services'
 	@echo '  restart      Restart all services'
+	@echo '  restart-config Restart only the Configuration Dashboard service'
 	@echo '  status       Show services status'
 	@echo '  logs         Show services logs (follow mode)'
 	@echo '  app-logs     Show only the Python application logs'
 	@echo '  config-logs  Show only the Configuration Dashboard logs'
+	@echo '  debug-config Debug the Configuration Dashboard service'
 	@echo '  ui           Open the Streamlit dashboard in browser'
 	@echo '  config-ui    Open the Configuration Dashboard in browser'
 	@echo '  dashboard    Start all services and open all dashboards'
@@ -62,6 +64,22 @@ app-logs:
 ## Show only the Configuration Dashboard logs
 config-logs:
 	docker-compose logs -f config-dashboard
+
+## Restart only the Configuration Dashboard service
+restart-config:
+	@echo "Restarting Configuration Dashboard..."
+	docker-compose restart config-dashboard
+	@echo "Configuration Dashboard restarted. Access it at http://localhost:${CONFIG_DASHBOARD_PORT:-8502}"
+
+## Debug the Configuration Dashboard service
+debug-config:
+	@echo "Debugging Configuration Dashboard..."
+	@echo "Checking if files are accessible inside the container..."
+	docker-compose exec config-dashboard ls -la /app
+	@echo "\nChecking if .env file is accessible..."
+	docker-compose exec config-dashboard ls -la /app/.env || echo "File not found"
+	@echo "\nChecking if docker-compose.yml file is accessible..."
+	docker-compose exec config-dashboard ls -la /app/docker-compose.yml || echo "File not found"
 
 ## Open the Streamlit dashboard in browser
 ui:
