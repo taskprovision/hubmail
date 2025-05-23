@@ -10,6 +10,8 @@ import plotly.express as px
 from dotenv import dotenv_values
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
+import time
+import base64
 
 # Set page config
 st.set_page_config(
@@ -38,6 +40,26 @@ st.markdown("""
         background-color: #ffffcc;
         padding: 2px 5px;
         border-radius: 3px;
+    }
+    .resource-info {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #121212;
+        color: #ffffff;
+        border-radius: 5px;
+        border: 2px solid #007bff;
+    }
+    .resource-info h4 {
+        margin-top: 0;
+        color: #00a3ff;
+        font-size: 1.1em;
+    }
+    .resource-info p {
+        margin: 5px 0;
+        color: #e0e0e0;
+    }
+    .resource-info strong {
+        color: #00a3ff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -179,6 +201,93 @@ def render_env_value(key: str, value: str, env_vars: Dict[str, str]) -> str:
     
     return re.sub(pattern, replace_var, value)
 
+def get_container_logs(container_name: str, lines: int = 100) -> str:
+    """Get logs from a specific container"""
+    try:
+        # Run docker logs command to get container logs
+        result = subprocess.run(
+            ['docker', 'logs', '--tail', str(lines), container_name],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        return f"Error getting logs: {str(e)}\n{e.stderr}"
+    except Exception as e:
+        return f"Unexpected error: {str(e)}"
+
+def get_container_ports(container_name: str) -> Dict[str, str]:
+    """Get port mappings for a specific container"""
+    port_mappings = {}
+    try:
+        # Run docker inspect command to get port mappings
+        result = subprocess.run(
+            ['docker', 'inspect', '--format', '{{json .NetworkSettings.Ports}}', container_name],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # Parse the JSON output
+        ports_data = json.loads(result.stdout)
+        
+        # Process each port mapping
+        for container_port, host_bindings in ports_data.items():
+            if host_bindings:
+                for binding in host_bindings:
+                    host_ip = binding.get('HostIp', '0.0.0.0')
+                    host_port = binding.get('HostPort', '')
+                    
+                    # Format: container_port -> host_ip:host_port
+                    container_port_clean = container_port.split('/')[0]  # Remove protocol (tcp/udp)
+                    host_ip = '127.0.0.1' if host_ip == '0.0.0.0' or host_ip == '' else host_ip
+                    
+                    # Generate URL based on port
+                    protocol = 'http'
+                    if container_port_clean in ['443', '8443']:
+                        protocol = 'https'
+                    
+                    url = f"{protocol}://{host_ip}:{host_port}"
+                    port_mappings[container_port_clean] = url
+        
+        return port_mappings
+    except Exception as e:
+        st.sidebar.error(f"Error getting port mappings: {str(e)}")
+        return {}
+
+def get_resource_usage() -> Dict[str, Dict[str, str]]:
+    """Get resource usage information for all running containers"""
+    resource_usage = {}
+    
+    try:
+        # Run docker stats command to get resource usage
+        result = subprocess.run(
+            ['docker', 'stats', '--no-stream', '--format', '{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.NetIO}}|{{.BlockIO}}'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # Process the output
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split('|')
+                if len(parts) >= 5:
+                    name, cpu, mem, net, block = parts[:5]
+                    resource_usage[name] = {
+                        'cpu': cpu,
+                        'memory': mem,
+                        'network': net,
+                        'disk': block
+                    }
+    except subprocess.CalledProcessError as e:
+        st.sidebar.error(f"Error getting resource usage: {str(e)}")
+    except Exception as e:
+        st.sidebar.error(f"Unexpected error: {str(e)}")
+    
+    return resource_usage
+
 def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
     """Check the status of all services defined in docker-compose.yml"""
     services_status = {}
@@ -193,11 +302,14 @@ def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str])
         "hubmail-app": {"status": "healthy", "status_code": 2},
         "node-red": {"status": "healthy", "status_code": 2},
         "redis": {"status": "healthy", "status_code": 2},
-        "config-dashboard": {"status": "healthy", "status_code": 2},
+        "config-dashboard": {"status": "unhealthy", "status_code": 0},
         "ollama": {"status": "unhealthy", "status_code": 0},
         "grafana": {"status": "healthy", "status_code": 2},
         "prometheus": {"status": "healthy", "status_code": 2}
     }
+    
+    # Get resource usage information
+    resource_usage = get_resource_usage()
     
     # Debug output in sidebar
     st.sidebar.write("### Service Status Debug")
@@ -208,15 +320,20 @@ def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str])
         # Get container name from service config or use service name as fallback
         container_name = service_config.get('container_name', service_name)
         
+        # Get port mappings for this container
+        port_mappings = get_container_ports(container_name)
+        
         # Default status
         status = {
             "status": "unknown",
             "status_code": 0,
             "url": None,
             "port": None,
+            "port_mappings": port_mappings,
             "last_checked": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "error": None,
-            "container_name": container_name
+            "container_name": container_name,
+            "service_name": service_name
         }
         
         # Extract port mappings and set appropriate URLs for health checks
@@ -234,11 +351,10 @@ def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str])
                         
                         status["port"] = host_port
                         
-                        # Determine URL based on service name or container name
-                        if 'hubmail-app' in service_name or 'app' in container_name:
-                            status["url"] = f"http://localhost:{host_port}/health"
-                        else:
-                            status["url"] = f"http://localhost:{host_port}"
+                        # Set the port information
+                        status["port"] = host_port
+                        
+                        # We'll use the port mappings from docker inspect for more accurate URLs
                         break
         
         # Debug output
@@ -272,6 +388,10 @@ def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str])
         
         # Store the service status in the results dictionary
         services_status[service_name] = status
+        
+        # Add resource usage if available for this container
+        if container_name in resource_usage:
+            services_status[service_name]['resource_usage'] = resource_usage[container_name]
     
     return services_status
 
@@ -312,10 +432,52 @@ def categorize_env_vars(env_vars: Dict[str, str]) -> Dict[str, Dict[str, str]]:
     
     return categories
 
+def create_log_viewer_html(container_name, logs):
+    """Create HTML for a log viewer popup"""
+    # Escape any special characters in the logs
+    escaped_logs = logs.replace("'", "\\'").replace('"', '\\"').replace('\n', '\\n')
+    
+    # Create a unique ID for this popup
+    popup_id = f"popup_{container_name.replace('-', '_')}"
+    
+    # Create the HTML for the popup
+    html = f"""
+    <div id="{popup_id}" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
+        <div class="modal-content" style="background-color: #121212; margin: 5% auto; padding: 20px; border: 2px solid #00a3ff; border-radius: 8px; width: 80%; max-width: 800px; max-height: 80vh; overflow: auto; color: white;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                <h2 style="margin: 0; color: #00a3ff;">Logs: {container_name}</h2>
+                <span class="close" onclick="document.getElementById('{popup_id}').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            <pre style="background-color: #1e1e1e; padding: 15px; border-radius: 5px; overflow: auto; white-space: pre-wrap; font-family: monospace; color: #e0e0e0; max-height: 60vh;">{escaped_logs}</pre>
+            <div style="text-align: right; margin-top: 15px;">
+                <button onclick="document.getElementById('{popup_id}').style.display='none'" style="background-color: #333; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Close the modal when clicking outside of it
+        window.onclick = function(event) {{
+            if (event.target.id === '{popup_id}') {{
+                document.getElementById('{popup_id}').style.display = 'none';
+            }}
+        }}
+    </script>
+    """
+    
+    return html
+
 def main():
     # Header
     st.title("⚙️ HubMail Configuration Dashboard")
     st.markdown("Visualize all your configuration settings in one place")
+    
+    # Create a session state for storing container logs
+    if 'container_logs' not in st.session_state:
+        st.session_state.container_logs = {}
+    
+    # Create a session state for tracking which container's logs to show
+    if 'show_logs_for' not in st.session_state:
+        st.session_state.show_logs_for = None
     
     # Sidebar
     st.sidebar.title("Configuration Files")
@@ -429,36 +591,122 @@ def main():
         
         for service_name, status in service_status.items():
             with cols[col_index % 3]:
-                # Determine card color based on status
+                # Determine colors and status text based on status
                 if status["status"] == "healthy":
-                    card_color = "#d4f1d4"  # light green
+                    border_color = "#00cc00"  # bright green
                     status_text = "✅ Healthy"
+                    status_bg = "rgba(0, 204, 0, 0.15)"  # semi-transparent green
+                    header_bg = "rgba(0, 204, 0, 0.3)"   # slightly more opaque green for header
                 elif status["status"] == "running":
-                    card_color = "#fff2cc"  # light yellow
+                    border_color = "#ffcc00"  # bright yellow
                     status_text = "🟡 Running (Health Unknown)"
+                    status_bg = "rgba(255, 204, 0, 0.15)"  # semi-transparent yellow
+                    header_bg = "rgba(255, 204, 0, 0.3)"   # slightly more opaque yellow for header
                 elif status["status"] == "unhealthy" or status["status"] == "unreachable":
-                    card_color = "#f8d7da"  # light red
+                    border_color = "#ff3333"  # bright red
                     status_text = "❌ Unhealthy/Unreachable"
+                    status_bg = "rgba(255, 51, 51, 0.15)"  # semi-transparent red
+                    header_bg = "rgba(255, 51, 51, 0.3)"   # slightly more opaque red for header
                 elif status["status"] == "stopped":
-                    card_color = "#e9ecef"  # light gray
+                    border_color = "#999999"  # gray
                     status_text = "⏹️ Stopped"
+                    status_bg = "rgba(153, 153, 153, 0.15)"  # semi-transparent gray
+                    header_bg = "rgba(153, 153, 153, 0.3)"   # slightly more opaque gray for header
                 else:
-                    card_color = "#e9ecef"  # light gray
+                    border_color = "#999999"  # gray
                     status_text = "❓ Unknown"
+                    status_bg = "rgba(153, 153, 153, 0.15)"  # semi-transparent gray
+                    header_bg = "rgba(153, 153, 153, 0.3)"   # slightly more opaque gray for header
                 
-                # Create card
-                st.markdown(f"""
-                <div style="padding: 15px; border-radius: 5px; background-color: {card_color}; margin-bottom: 10px;">
-                    <h3>{service_name}</h3>
-                    <p><strong>Status:</strong> {status_text}</p>
-                    <p><strong>Container:</strong> {status['container_name']}</p>
-                    <p><strong>URL:</strong> <a href="{status['url']}" target="_blank">{status['url'] if status['url'] else 'N/A'}</a></p>
-                    <p><strong>Port:</strong> {status['port'] if status['port'] else 'N/A'}</p>
-                    <p><strong>Last Checked:</strong> {status['last_checked']}</p>
-                </div>
-                """, unsafe_allow_html=True)
+                # Base dark background
+                bg_color = "#121212"  # dark background
+                
+                # Resource usage information as separate variables
+                has_resource_info = 'resource_usage' in status
+                cpu_usage = status['resource_usage']['cpu'] if has_resource_info else 'N/A'
+                memory_usage = status['resource_usage']['memory'] if has_resource_info else 'N/A'
+                network_io = status['resource_usage']['network'] if has_resource_info else 'N/A'
+                disk_io = status['resource_usage']['disk'] if has_resource_info else 'N/A'
+                
+                # Create a custom container for each service using Streamlit's columns and containers
+                with st.container():
+                    # Apply custom CSS to this container with enhanced status colors
+                    st.markdown(f'''
+                    <style>
+                        [data-testid="stVerticalBlock"]:nth-of-type({col_index + 1}) > [data-testid="stVerticalBlock"] > [data-testid="element-container"]:nth-of-type(1) {{  
+                            background-color: {status_bg};
+                            border: 3px solid {border_color};
+                            border-radius: 8px;
+                            padding: 0;
+                            margin-bottom: 20px;
+                            color: white;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                            overflow: hidden;
+                        }}
+                    </style>
+                    ''', unsafe_allow_html=True)
+                    
+                    # Service header with colored background
+                    st.markdown(f"""
+                    <div style="background-color: {header_bg}; padding: 10px; border-bottom: 2px solid {border_color}; margin-bottom: 10px;">
+                        <h3 style="color: white; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">{service_name}</h3>
+                        <p style="margin: 5px 0 0 0;"><strong style="color: {border_color}; font-size: 1.1em;">{status_text}</strong></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Service info section with padding
+                    st.markdown(f"""
+                    <div style="padding: 0 15px 15px 15px;">
+                        <p><strong style='color: #00a3ff;'>Container:</strong> {status['container_name']}</p>
+                        <p><strong style='color: #00a3ff;'>URL:</strong> <a href='{status['url']}' target='_blank' style='color: #4da6ff;'>{status['url'] if status['url'] else 'N/A'}</a></p>
+                        <p><strong style='color: #00a3ff;'>Port:</strong> {status['port'] if status['port'] else 'N/A'}</p>
+                        <p><strong style='color: #00a3ff;'>Last Checked:</strong> {status['last_checked']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Add resource usage section if available
+                    if has_resource_info:
+                        # Resource usage section with styled header
+                        st.markdown(f"""
+                        <div style="background-color: rgba(0, 0, 0, 0.2); margin: 0 -1px -1px -1px; padding: 0;">
+                            <div style="border-top: 1px solid {border_color}; padding: 10px; background-color: rgba(0, 0, 0, 0.3);">
+                                <h4 style="color: #00a3ff; margin: 0; font-size: 1.1em;">Resource Usage</h4>
+                            </div>
+                            <div style="padding: 10px 15px 15px 15px;">
+                                <p><strong style='color: #00a3ff;'>CPU:</strong> {cpu_usage}</p>
+                                <p><strong style='color: #00a3ff;'>Memory:</strong> {memory_usage}</p>
+                                <p><strong style='color: #00a3ff;'>Network I/O:</strong> {network_io}</p>
+                                <p><strong style='color: #00a3ff;'>Disk I/O:</strong> {disk_io}</p>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
             
             col_index += 1
+        
+        # Resource Usage Table
+        st.subheader("Resource Usage")
+        
+        # Get resource usage data
+        resource_data = get_resource_usage()
+        
+        if resource_data:
+            # Create a dataframe for the resource usage
+            resource_rows = []
+            for container_name, usage in resource_data.items():
+                resource_rows.append({
+                    "Container": container_name,
+                    "CPU": usage['cpu'],
+                    "Memory": usage['memory'],
+                    "Network I/O": usage['network'],
+                    "Disk I/O": usage['disk']
+                })
+            
+            if resource_rows:
+                st.dataframe(pd.DataFrame(resource_rows), hide_index=True, use_container_width=True)
+            else:
+                st.info("No resource usage information available")
+        else:
+            st.info("No resource usage information available")
         
         # Service dependency graph
         st.subheader("Service Dependencies")
