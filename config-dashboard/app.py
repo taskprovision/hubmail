@@ -147,23 +147,49 @@ def main():
     with tab2:
         display_config_viewer_tab()
     
-    # Add JavaScript for fixing popup behavior
+    # Add JavaScript for fixing popup behavior and ensuring all components work properly
     st.markdown("""
     <script>
-    // Function to show a popup
-    function showPopup(popupId) {
-        document.getElementById(popupId).style.display = 'block';
-    }
-    
-    // Add click event listeners to all headers
+    // This script ensures all popups and interactive elements work correctly
     document.addEventListener('DOMContentLoaded', function() {
-        const headers = document.querySelectorAll('[id^="header_"]');
-        headers.forEach(header => {
-            const containerId = header.id.replace('header_', '');
-            header.addEventListener('click', function() {
-                showPopup('popup_' + containerId);
+        // Function to initialize all popups and clickable elements
+        function initializeUI() {
+            // Make all headers with popup functionality clickable
+            const headers = document.querySelectorAll('[id^="header_"]');
+            headers.forEach(header => {
+                const containerId = header.id.replace('header_', '');
+                header.onclick = function() {
+                    const popup = document.getElementById('popup_' + containerId);
+                    if (popup) {
+                        popup.style.display = 'block';
+                    }
+                };
             });
+            
+            // Make sure popups can be closed by clicking outside
+            const popups = document.querySelectorAll('.modal');
+            popups.forEach(popup => {
+                popup.onclick = function(event) {
+                    if (event.target === popup) {
+                        popup.style.display = 'none';
+                    }
+                };
+            });
+        }
+        
+        // Initialize UI immediately
+        initializeUI();
+        
+        // Also initialize after a short delay to ensure all elements are loaded
+        setTimeout(initializeUI, 1000);
+        
+        // Set up a mutation observer to detect when new elements are added to the DOM
+        const observer = new MutationObserver(function(mutations) {
+            initializeUI();
         });
+        
+        // Start observing the document with the configured parameters
+        observer.observe(document.body, { childList: true, subtree: true });
     });
     </script>
     """, unsafe_allow_html=True)
