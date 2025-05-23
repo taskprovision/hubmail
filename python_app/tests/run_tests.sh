@@ -101,10 +101,13 @@ run_local_tests() {
     
     # Install test dependencies if needed
     echo -e "${BLUE}Checking test dependencies...${NC}"
-    python3 -m pip install -q pytest pytest-asyncio pytest-cov &> /dev/null || {
-        echo -e "${YELLOW}Installing test dependencies...${NC}"
-        python3 -m pip install pytest pytest-asyncio pytest-cov
-    }
+    if [ -f "tests/requirements-test.txt" ]; then
+        echo -e "${YELLOW}Installing test dependencies from requirements-test.txt...${NC}"
+        python3 -m pip install -r tests/requirements-test.txt
+    else
+        echo -e "${YELLOW}requirements-test.txt not found. Installing basic test dependencies...${NC}"
+        python3 -m pip install pytest pytest-asyncio pytest-cov fastapi pydantic httpx prefect python-dotenv
+    fi
     
     # Prepare test command
     TEST_CMD="python3 -m pytest"
@@ -159,6 +162,15 @@ run_docker_tests() {
     
     # Check if the container is running
     check_docker_container
+    
+    # Install test dependencies in the container
+    echo -e "${BLUE}Installing test dependencies in Docker container...${NC}"
+    if [ -f "tests/requirements-test.txt" ]; then
+        docker cp tests/requirements-test.txt email-app:/app/tests/
+        docker exec -it email-app pip install -r /app/tests/requirements-test.txt
+    else
+        docker exec -it email-app pip install pytest pytest-asyncio pytest-cov fastapi pydantic httpx prefect python-dotenv
+    fi
     
     # Prepare test command
     TEST_CMD="python -m pytest"

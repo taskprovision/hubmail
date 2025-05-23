@@ -1,0 +1,22 @@
+email:
+  imap:
+    host: imap.example.com
+    port: 993
+    username: user@example.com
+    password: secret
+    folder: INBOX
+    check_interval: 300  # sekundy
+  smtp:
+    host: smtp.example.com
+    port: 587
+    username: user@example.com
+    password: secret
+
+attachments:
+  save_path: ./attachments
+
+monitoring:
+  enabled: true
+  log_level: INFO
+  dashboard_port: 8000
+  metrics_enabled: true
