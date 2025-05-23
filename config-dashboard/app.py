@@ -221,7 +221,41 @@ def get_container_ports(container_name: str) -> Dict[str, str]:
     """Get port mappings for a specific container"""
     port_mappings = {}
     try:
-        # Run docker inspect command to get port mappings
+        # First try using docker port command which is more reliable for actual port bindings
+        try:
+            result = subprocess.run(
+                ['docker', 'port', container_name],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            # Parse the output which is in format: container_port/protocol -> host_ip:host_port
+            for line in result.stdout.strip().split('\n'):
+                if '->' in line:
+                    container_port_part, host_part = line.split('->')
+                    container_port = container_port_part.strip().split('/')[0]  # Remove protocol (tcp/udp)
+                    host_ip, host_port = host_part.strip().split(':')
+                    
+                    # Use localhost for better browser compatibility
+                    if host_ip == '0.0.0.0' or host_ip == '::':
+                        host_ip = 'localhost'
+                    
+                    # Generate URL based on port
+                    protocol = 'http'
+                    if container_port in ['443', '8443']:
+                        protocol = 'https'
+                    
+                    url = f"{protocol}://{host_ip}:{host_port}"
+                    port_mappings[container_port] = url
+            
+            if port_mappings:
+                return port_mappings
+        except subprocess.CalledProcessError:
+            # Fall back to docker inspect if docker port fails
+            pass
+        
+        # Fallback: Run docker inspect command to get port mappings
         result = subprocess.run(
             ['docker', 'inspect', '--format', '{{json .NetworkSettings.Ports}}', container_name],
             capture_output=True,
@@ -241,7 +275,10 @@ def get_container_ports(container_name: str) -> Dict[str, str]:
                     
                     # Format: container_port -> host_ip:host_port
                     container_port_clean = container_port.split('/')[0]  # Remove protocol (tcp/udp)
-                    host_ip = '127.0.0.1' if host_ip == '0.0.0.0' or host_ip == '' else host_ip
+                    
+                    # Use localhost for better browser compatibility
+                    if host_ip == '0.0.0.0' or host_ip == '::' or host_ip == '':
+                        host_ip = 'localhost'
                     
                     # Generate URL based on port
                     protocol = 'http'
@@ -646,19 +683,44 @@ def main():
                     </style>
                     ''', unsafe_allow_html=True)
                     
-                    # Service header with colored background
+                    # Get container logs when button is clicked
+                    container_name = status['container_name']
+                    
+                    # Create a unique key for this container's button
+                    button_key = f"logs_{container_name}_{col_index}"
+                    
+                    # Create a clickable header for logs
                     st.markdown(f"""
-                    <div style="background-color: {header_bg}; padding: 10px; border-bottom: 2px solid {border_color}; margin-bottom: 10px;">
+                    <div style="background-color: {header_bg}; padding: 10px; border-bottom: 2px solid {border_color}; margin-bottom: 10px; cursor: pointer;" 
+                         onclick="document.getElementById('popup_{container_name.replace('-', '_')}').style.display='block'">
                         <h3 style="color: white; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">{service_name}</h3>
                         <p style="margin: 5px 0 0 0;"><strong style="color: {border_color}; font-size: 1.1em;">{status_text}</strong></p>
+                        <small style="color: #aaa;">Click to view logs</small>
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # Fetch and store logs
+                    logs = get_container_logs(container_name)
+                    st.session_state.container_logs[container_name] = logs
+                    
+                    # Create the log viewer popup
+                    log_viewer_html = create_log_viewer_html(container_name, logs)
+                    st.markdown(log_viewer_html, unsafe_allow_html=True)
+                    
                     # Service info section with padding
+                    url_links = ""
+                    if status['port_mappings']:
+                        url_links = "<div style='margin-top: 5px;'>"
+                        for port, url in status['port_mappings'].items():
+                            # Extract just the port number from the URL for cleaner display
+                            url_display = url.split('//')[1] if '//' in url else url
+                            url_links += f"<a href='{url}' target='_blank' style='display: inline-block; margin-right: 10px; background-color: rgba(0,163,255,0.2); padding: 3px 8px; border-radius: 4px; color: #4da6ff; text-decoration: none;'><span style='color: white;'>Port {port}:</span> {url_display}</a>"
+                        url_links += "</div>"
+                    
                     st.markdown(f"""
                     <div style="padding: 0 15px 15px 15px;">
                         <p><strong style='color: #00a3ff;'>Container:</strong> {status['container_name']}</p>
-                        <p><strong style='color: #00a3ff;'>URL:</strong> <a href='{status['url']}' target='_blank' style='color: #4da6ff;'>{status['url'] if status['url'] else 'N/A'}</a></p>
+                        <p><strong style='color: #00a3ff;'>URL:</strong> {url_links if status['port_mappings'] else '<span style="color: #666;">No URLs available</span>'}</p>
                         <p><strong style='color: #00a3ff;'>Port:</strong> {status['port'] if status['port'] else 'N/A'}</p>
                         <p><strong style='color: #00a3ff;'>Last Checked:</strong> {status['last_checked']}</p>
                     </div>
