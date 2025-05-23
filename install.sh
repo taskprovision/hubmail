@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Installing Email Intelligence Hub..."
+echo "🚀 Installing HubMail - Email Automation System..."
 
 # Check requirements
 command -v docker >/dev/null 2>&1 || { echo "Docker required but not installed. Aborting." >&2; exit 1; }
@@ -9,8 +9,8 @@ command -v docker-compose >/dev/null 2>&1 || { echo "Docker Compose required but
 
 # Create directories with proper permissions
 echo "📁 Creating project structure..."
-mkdir -p config/{prometheus,grafana/{datasources,dashboards},node-red,ollama}
-mkdir -p data/{prometheus,grafana,node-red,ollama}
+mkdir -p config/{prometheus,grafana/{datasources,dashboards},node-red}
+mkdir -p data/{prometheus,grafana,node-red,ollama,redis}
 
 # Set ownership of data directories to current user
 echo "🔑 Setting up permissions (may require sudo)..."
@@ -23,6 +23,7 @@ fi
 # Set directory permissions
 chmod 775 data/grafana 2>/dev/null || true
 chmod 775 data/prometheus 2>/dev/null || true
+chmod 775 data/redis 2>/dev/null || true
 
 # Copy example env file if it doesn't exist
 if [ ! -f .env ]; then
@@ -51,6 +52,7 @@ else
 fi
 
 echo "✅ Project structure created!"
+
 echo "🔧 Starting services..."
 
 # Start the services
@@ -83,12 +85,14 @@ else
 fi
 
 echo ""
-echo "✅ Email Intelligence Hub is ready!"
+echo "✅ HubMail Email Automation System is ready!"
 echo ""
 echo "🎉 Access your services:"
-echo "   • Node-RED: http://localhost:${NODERED_PORT:-1880}"
+echo "   • Dashboard: http://localhost:${UI_PORT:-8501}"
+echo "   • API: http://localhost:${API_PORT:-3001}"
 echo "   • Grafana: http://localhost:${GRAFANA_PORT:-3000} (admin/${GRAFANA_ADMIN_PASSWORD:-admin})"
 echo "   • Prometheus: http://localhost:${PROMETHEUS_PORT:-9090}"
 echo ""
 echo "🧪 Test the system: make test"
 echo "📜 View logs: make logs"
+echo "🔍 Open dashboard: make ui"
