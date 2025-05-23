@@ -34,8 +34,52 @@ logger.add(lambda msg: print(msg), level="INFO")
 # Ładowanie konfiguracji
 def load_config():
     try:
+        # Ładowanie zmiennych środowiskowych
+        load_dotenv()
+        
+        # Ładowanie pliku konfiguracyjnego
         with open('config.yaml', 'r') as f:
-            return yaml.safe_load(f)
+            config_str = f.read()
+        
+        # Zastępowanie zmiennych środowiskowych
+        import re
+        import os
+        
+        pattern = r'\${([A-Za-z0-9_]+)}'
+        
+        def replace_env_var(match):
+            env_var = match.group(1)
+            value = os.getenv(env_var)
+            if value is None:
+                # Domyślne wartości dla często używanych zmiennych
+                defaults = {
+                    'EMAIL_IMAP_HOST': 'localhost',
+                    'EMAIL_IMAP_PORT': '1143',
+                    'EMAIL_IMAP_USERNAME': 'test@example.com',
+                    'EMAIL_IMAP_PASSWORD': 'password',
+                    'EMAIL_IMAP_FOLDER': 'INBOX',
+                    'EMAIL_IMAP_CHECK_INTERVAL': '30',
+                    'EMAIL_SMTP_HOST': 'localhost',
+                    'EMAIL_SMTP_PORT': '1025',
+                    'EMAIL_SMTP_USERNAME': 'test@example.com',
+                    'EMAIL_SMTP_PASSWORD': 'password',
+                    'ATTACHMENTS_PATH': './attachments',
+                    'LOG_LEVEL': 'INFO',
+                    'DASHBOARD_PORT': '8000',
+                    'METRICS_ENABLED': 'true'
+                }
+                if env_var in defaults:
+                    logger.info(f"Używam domyślnej wartości dla {env_var}: {defaults[env_var]}")
+                    return defaults[env_var]
+                logger.warning(f"Zmienna środowiskowa {env_var} nie jest ustawiona!")
+                return match.group(0)  # Pozostawienie oryginalnego tekstu
+            return value
+        
+        config_str = re.sub(pattern, replace_env_var, config_str)
+        
+        # Parsowanie YAML
+        config = yaml.safe_load(config_str)
+        return config
     except Exception as e:
         logger.error(f"Błąd podczas ładowania konfiguracji: {str(e)}")
         return {}

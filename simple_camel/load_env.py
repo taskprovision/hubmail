@@ -33,6 +33,26 @@ def load_config_with_env_vars(config_path='config.yaml'):
         value = os.getenv(env_var)
         if value is None:
             print(f"OSTRZEŻENIE: Zmienna środowiskowa {env_var} nie jest ustawiona!")
+            # Domyślne wartości dla często używanych zmiennych
+            defaults = {
+                'EMAIL_IMAP_HOST': 'localhost',
+                'EMAIL_IMAP_PORT': '1143',
+                'EMAIL_IMAP_USERNAME': 'test@example.com',
+                'EMAIL_IMAP_PASSWORD': 'password',
+                'EMAIL_IMAP_FOLDER': 'INBOX',
+                'EMAIL_IMAP_CHECK_INTERVAL': '30',
+                'EMAIL_SMTP_HOST': 'localhost',
+                'EMAIL_SMTP_PORT': '1025',
+                'EMAIL_SMTP_USERNAME': 'test@example.com',
+                'EMAIL_SMTP_PASSWORD': 'password',
+                'ATTACHMENTS_PATH': './attachments',
+                'LOG_LEVEL': 'INFO',
+                'DASHBOARD_PORT': '8000',
+                'METRICS_ENABLED': 'true'
+            }
+            if env_var in defaults:
+                print(f"Używam domyślnej wartości dla {env_var}: {defaults[env_var]}")
+                return defaults[env_var]
             return match.group(0)  # Pozostawienie oryginalnego tekstu
         return value
     
