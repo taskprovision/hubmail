@@ -9,10 +9,16 @@ import uvicorn
 from dotenv import load_dotenv
 
 # Import our modules
-from ..utils.logger import get_logger
-from ..models.email import Email, EmailAnalysis
-from ..flows.email_processor import process_email, check_emails
-from ..flows.llm_service import analyze_email_content
+import sys
+import os
+
+# Add the parent directory to sys.path to enable absolute imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils.logger import get_logger
+from models.email import Email, EmailAnalysis
+from flows.email_processor import process_email, check_emails
+from flows.llm_service import analyze_email_content
 
 # Load environment variables
 load_dotenv()

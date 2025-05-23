@@ -1,11 +1,15 @@
 import os
 import re
 import yaml
+import json
+import subprocess
+import requests
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from dotenv import dotenv_values
 from typing import Dict, List, Any, Optional, Tuple
+from datetime import datetime
 
 # Set page config
 st.set_page_config(
@@ -175,22 +179,125 @@ def render_env_value(key: str, value: str, env_vars: Dict[str, str]) -> str:
     
     return re.sub(pattern, replace_var, value)
 
+def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
+    """Check the status of all services defined in docker-compose.yml"""
+    services_status = {}
+    
+    if 'services' not in compose_data:
+        return services_status
+    
+    for service_name, service_config in compose_data['services'].items():
+        # Default status
+        status = {
+            "status": "unknown",
+            "status_code": 0,
+            "url": None,
+            "port": None,
+            "last_checked": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "error": None,
+            "container_name": service_config.get('container_name', service_name)
+        }
+        
+        # Extract port mappings
+        if 'ports' in service_config:
+            for port_mapping in service_config['ports']:
+                if isinstance(port_mapping, str):
+                    parts = port_mapping.split(':')
+                    if len(parts) == 2:
+                        host_port = parts[0]
+                        # Replace environment variables
+                        if '${' in host_port:
+                            var_name = host_port.strip('${').split(':-')[0]
+                            default_value = host_port.split(':-')[1].strip('}') if ':-' in host_port else None
+                            host_port = env_vars.get(var_name, default_value) if var_name in env_vars else default_value
+                        
+                        status["port"] = host_port
+                        # Determine URL based on service type
+                        if service_name == 'hubmail-app':
+                            status["url"] = f"http://localhost:{host_port}/health"
+                        elif service_name == 'config-dashboard':
+                            status["url"] = f"http://localhost:{host_port}"
+                        elif service_name == 'node-red':
+                            status["url"] = f"http://localhost:{host_port}"
+                        elif service_name == 'grafana':
+                            status["url"] = f"http://localhost:{host_port}"
+                        elif service_name == 'prometheus':
+                            status["url"] = f"http://localhost:{host_port}"
+                        elif service_name == 'ollama':
+                            status["url"] = f"http://localhost:{host_port}"
+                        else:
+                            status["url"] = f"http://localhost:{host_port}"
+                        break
+        
+        # Check if service is running using docker-compose ps
+        try:
+            result = subprocess.run(
+                ["docker-compose", "ps", "-q", status["container_name"]], 
+                capture_output=True, 
+                text=True,
+                check=False
+            )
+            if result.stdout.strip():
+                status["status"] = "running"
+                status["status_code"] = 1
+            else:
+                status["status"] = "stopped"
+                status["status_code"] = -1
+        except Exception as e:
+            status["error"] = str(e)
+        
+        # If service is running and has a URL, check if it's responding
+        if status["status"] == "running" and status["url"]:
+            try:
+                response = requests.get(status["url"], timeout=2)
+                if response.status_code < 400:
+                    status["status"] = "healthy"
+                    status["status_code"] = 2
+                else:
+                    status["status"] = "unhealthy"
+                    status["status_code"] = 0
+            except requests.RequestException:
+                status["status"] = "unreachable"
+                status["status_code"] = 0
+        
+        services_status[service_name] = status
+    
+    return services_status
+
 def categorize_env_vars(env_vars: Dict[str, str]) -> Dict[str, Dict[str, str]]:
     """Categorize environment variables by prefix"""
     categories = {}
     
+    # Define known categories
+    known_prefixes = {
+        "API": "API Settings",
+        "UI": "UI Settings",
+        "EMAIL": "Email Settings",
+        "LLM": "LLM Settings",
+        "REDIS": "Redis Settings",
+        "NODE_RED": "Node-RED Settings",
+        "OLLAMA": "Ollama Settings",
+        "PROMETHEUS": "Prometheus Settings",
+        "GRAFANA": "Grafana Settings",
+        "CONFIG_DASHBOARD": "Config Dashboard Settings"
+    }
+    
+    # Categorize variables
     for key, value in env_vars.items():
-        # Find category based on prefix (before first _)
-        parts = key.split('_', 1)
-        if len(parts) > 1:
-            category = parts[0]
-        else:
-            category = "OTHER"
-            
-        if category not in categories:
-            categories[category] = {}
-            
-        categories[category][key] = value
+        category_found = False
+        
+        for prefix, category_name in known_prefixes.items():
+            if key.startswith(prefix):
+                if category_name not in categories:
+                    categories[category_name] = {}
+                categories[category_name][key] = value
+                category_found = True
+                break
+        
+        if not category_found:
+            if "Other" not in categories:
+                categories["Other"] = {}
+            categories["Other"][key] = value
     
     return categories
 
@@ -222,6 +329,9 @@ def main():
     if not files_loaded:
         st.warning("⚠️ Could not load configuration files. Please check the file paths.")
         return
+        
+    # Check service status
+    service_status = check_service_status(compose_data, env_vars)
     
     # Extract data
     env_vars_in_compose = find_env_vars_in_compose(compose_data)
@@ -231,7 +341,7 @@ def main():
     service_dependencies = get_service_dependencies(compose_data)
     
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🔧 Services", "🔍 Environment Variables"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dashboard", "🚦 Service Status", "🔧 Services", "🔍 Environment Variables"])
     
     # Dashboard tab
     with tab1:
@@ -251,6 +361,93 @@ def main():
         
         with col4:
             st.metric("Networks", len(compose_data.get('networks', {})))
+            
+    # Service Status tab
+    with tab2:
+        st.header("Service Status")
+        st.markdown("Current status of all services in the system")
+        
+        # Add refresh button
+        if st.button("🔄 Refresh Status"):
+            service_status = check_service_status(compose_data, env_vars)
+            st.success("Status refreshed!")
+        
+        # Display service status in a table
+        status_data = []
+        for service_name, status in service_status.items():
+            # Get status color and icon
+            if status["status"] == "healthy":
+                status_icon = "✅"
+                status_color = "green"
+            elif status["status"] == "running":
+                status_icon = "🟡"
+                status_color = "yellow"
+            elif status["status"] == "unhealthy" or status["status"] == "unreachable":
+                status_icon = "❌"
+                status_color = "red"
+            elif status["status"] == "stopped":
+                status_icon = "⏹️"
+                status_color = "gray"
+            else:
+                status_icon = "❓"
+                status_color = "gray"
+            
+            # Format URL as a link if available
+            url_display = f"[{status['url']}]({status['url']})" if status["url"] else "N/A"
+            
+            status_data.append({
+                "Service": service_name,
+                "Container": status["container_name"],
+                "Status": f"{status_icon} {status['status']}",
+                "URL": url_display,
+                "Port": status["port"] if status["port"] else "N/A",
+                "Last Checked": status["last_checked"]
+            })
+        
+        if status_data:
+            st.dataframe(pd.DataFrame(status_data), hide_index=True, use_container_width=True)
+        else:
+            st.info("No service status information available")
+        
+        # Display service health cards
+        st.subheader("Service Health Details")
+        
+        # Create columns for service cards
+        cols = st.columns(3)
+        col_index = 0
+        
+        for service_name, status in service_status.items():
+            with cols[col_index % 3]:
+                # Determine card color based on status
+                if status["status"] == "healthy":
+                    card_color = "#d4f1d4"  # light green
+                    status_text = "✅ Healthy"
+                elif status["status"] == "running":
+                    card_color = "#fff2cc"  # light yellow
+                    status_text = "🟡 Running (Health Unknown)"
+                elif status["status"] == "unhealthy" or status["status"] == "unreachable":
+                    card_color = "#f8d7da"  # light red
+                    status_text = "❌ Unhealthy/Unreachable"
+                elif status["status"] == "stopped":
+                    card_color = "#e9ecef"  # light gray
+                    status_text = "⏹️ Stopped"
+                else:
+                    card_color = "#e9ecef"  # light gray
+                    status_text = "❓ Unknown"
+                
+                # Create card
+                st.markdown(f"""
+                <div style="padding: 15px; border-radius: 5px; background-color: {card_color}; margin-bottom: 10px;">
+                    <h3>{service_name}</h3>
+                    <p><strong>Status:</strong> {status_text}</p>
+                    <p><strong>Container:</strong> {status['container_name']}</p>
+                    <p><strong>URL:</strong> <a href="{status['url']}" target="_blank">{status['url'] if status['url'] else 'N/A'}</a></p>
+                    <p><strong>Port:</strong> {status['port'] if status['port'] else 'N/A'}</p>
+                    <p><strong>Last Checked:</strong> {status['last_checked']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            col_index += 1
         
         # Service dependency graph
         st.subheader("Service Dependencies")
@@ -361,7 +558,7 @@ def main():
             st.info("No environment variables found")
     
     # Services tab
-    with tab2:
+    with tab3:
         st.header("Services Configuration")
         
         # Get all services
@@ -431,7 +628,7 @@ def main():
                         st.write(", ".join(f"`{dep}`" for dep in service_dependencies[service_name]))
     
     # Environment Variables tab
-    with tab3:
+    with tab4:
         st.header("Environment Variables")
         
         # Create a search box

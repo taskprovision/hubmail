@@ -7,11 +7,17 @@ import os
 from dotenv import load_dotenv
 
 # Import our modules
-from ..models.email import Email, EmailAnalysis
-from ..utils.logger import get_logger
-from .llm_service import analyze_email_content
-from .notification_service import send_notification
-from .email_service import fetch_new_emails, mark_as_seen
+import sys
+import os
+
+# Add the parent directory to sys.path to enable absolute imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from models.email import Email, EmailAnalysis
+from utils.logger import get_logger
+from flows.llm_service import analyze_email_content
+from flows.notification_service import send_notification
+from flows.email_service import fetch_new_emails, mark_as_seen
 
 # Load environment variables
 load_dotenv()
