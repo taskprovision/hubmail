@@ -74,7 +74,11 @@ def check_service_status(service_name: str, service_config: Dict[str, Any]) -> D
     }
     
     # Check if container exists
-    if not check_container_exists(container_name):
+    if container_name == "email-ollama":
+        ollama_health = check_ollama_health(container_name)
+        status.update(ollama_health)
+        return status
+    elif not check_container_exists(container_name):
         status["status"] = "stopped"
         status["status_code"] = 0
         status["error"] = "Container does not exist"
@@ -294,3 +298,4 @@ def load_services_config() -> Dict[str, Dict[str, Any]]:
     except Exception as e:
         st.sidebar.error(f"Error loading services configuration: {str(e)}")
         return {}
+from modules.ollama_health import check_ollama_health

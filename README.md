@@ -146,6 +146,16 @@ Każdy email przechodzi przez następujący proces:
   ./install.sh
   ```
 
+## 🪵 Podgląd logów kontenerów Docker
+
+Aby wyświetlić ostatnie 10 linii logów dla każdego uruchomionego kontenera Docker, użyj polecenia:
+
+```bash
+make logs
+```
+
+Wyświetli to sekcje logów dla każdego kontenera z nagłówkiem z nazwą kontenera. Przydatne do szybkiej diagnostyki wszystkich usług.
+
 ## 📝 Licencja
 
 Ten projekt jest dostępny na licencji Apache. Więcej informacji w pliku [LICENSE](LICENSE).

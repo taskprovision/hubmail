@@ -1,4 +1,4 @@
-.PHONY: help install dev stop restart restart-config status logs clean test backup restore check-api ui config-ui config-logs dashboard all-ui python-deps update-env debug-config
+.PHONY: help install dev stop restart restart-config status logs app-logs config-logs debug-config ui config-ui dashboard all-ui python-deps update-env clean test backup restore check-api
 
 ## Show this help
 help:
@@ -10,7 +10,7 @@ help:
 	@echo '  restart      Restart all services'
 	@echo '  restart-config Restart only the Configuration Dashboard service'
 	@echo '  status       Show services status'
-	@echo '  logs         Show services logs (follow mode)'
+	@echo '  logs         Show last 10 lines of logs for each running Docker container'
 	@echo '  app-logs     Show only the Python application logs'
 	@echo '  config-logs  Show only the Configuration Dashboard logs'
 	@echo '  debug-config Debug the Configuration Dashboard service'
@@ -28,21 +28,21 @@ help:
 
 ## Install project dependencies
 install: .env
-	@echo "Installing project dependencies..."
+	@echo -e "Installing project dependencies..."
 	./install.sh
 
 ## Start all services
 dev: .env
-	@echo "Starting HubMail in development mode..."
-	@echo "Access services at:"
-	@echo "- Node-RED: http://localhost:1880"
-	@echo "- Grafana: http://localhost:3000 (admin/admin)"
-	@echo "- Prometheus: http://localhost:9090"
+	@echo -e "Starting HubMail in development mode..."
+	@echo -e "Access services at:"
+	@echo -e "- Node-RED: http://localhost:1880"
+	@echo -e "- Grafana: http://localhost:3000 (admin/admin)"
+	@echo -e "- Prometheus: http://localhost:9090"
 	docker-compose up -d
 
 ## Stop all services
 stop:
-	@echo "Stopping all services..."
+	@echo -e "Stopping all services..."
 	docker-compose down
 
 ## Restart all services
@@ -50,12 +50,17 @@ restart: stop dev
 
 ## Show services status
 status:
-	@echo "Services status:"
+	@echo -e "Services status:"
 	docker-compose ps
 
-## Show services logs
+## Show last 10 lines of logs for each Docker container
 logs:
-	docker-compose logs -f
+	@echo -e "Showing last 10 lines of logs for each running Docker container..."
+	clear
+	@for c in $$(docker ps --format '{{.Names}}'); do \
+	  echo -e "\docker logs $$c"; \
+	  docker logs --tail 15 $$c 2>&1; \
+	done
 
 ## Show only the Python application logs
 app-logs:
@@ -67,100 +72,100 @@ config-logs:
 
 ## Restart only the Configuration Dashboard service
 restart-config:
-	@echo "Restarting Configuration Dashboard..."
+	@echo -e "Restarting Configuration Dashboard..."
 	docker-compose restart config-dashboard
-	@echo "Configuration Dashboard restarted. Access it at http://localhost:${CONFIG_DASHBOARD_PORT:-8502}"
+	@echo -e "Configuration Dashboard restarted. Access it at http://localhost:${CONFIG_DASHBOARD_PORT:-8502}"
 
 ## Debug the Configuration Dashboard service
 debug-config:
-	@echo "Debugging Configuration Dashboard..."
-	@echo "Checking if files are accessible inside the container..."
+	@echo -e "Debugging Configuration Dashboard..."
+	@echo -e "Checking if files are accessible inside the container..."
 	docker-compose exec config-dashboard ls -la /app
-	@echo "\nChecking if .env file is accessible..."
-	docker-compose exec config-dashboard ls -la /app/.env || echo "File not found"
-	@echo "\nChecking if docker-compose.yml file is accessible..."
-	docker-compose exec config-dashboard ls -la /app/docker-compose.yml || echo "File not found"
+	@echo -e "\nChecking if .env file is accessible..."
+	docker-compose exec config-dashboard ls -la /app/.env || echo -e "File not found"
+	@echo -e "\nChecking if docker-compose.yml file is accessible..."
+	docker-compose exec config-dashboard ls -la /app/docker-compose.yml || echo -e "File not found"
 
 ## Open the Streamlit dashboard in browser
 ui:
-	@echo "Opening Streamlit dashboard in browser..."
-	xdg-open http://localhost:${UI_PORT:-8501} 2>/dev/null || open http://localhost:${UI_PORT:-8501} 2>/dev/null || echo "Please open http://localhost:${UI_PORT:-8501} in your browser"
+	@echo -e "Opening Streamlit dashboard in browser..."
+	xdg-open http://localhost:${UI_PORT:-8501} 2>/dev/null || open http://localhost:${UI_PORT:-8501} 2>/dev/null || echo -e "Please open http://localhost:${UI_PORT:-8501} in your browser"
 
 ## Open the Configuration Dashboard in browser
 config-ui:
-	@echo "Opening Configuration Dashboard in browser..."
-	xdg-open http://localhost:${CONFIG_DASHBOARD_PORT:-8502} 2>/dev/null || open http://localhost:${CONFIG_DASHBOARD_PORT:-8502} 2>/dev/null || echo "Please open http://localhost:${CONFIG_DASHBOARD_PORT:-8502} in your browser"
+	@echo -e "Opening Configuration Dashboard in browser..."
+	xdg-open http://localhost:${CONFIG_DASHBOARD_PORT:-8502} 2>/dev/null || open http://localhost:${CONFIG_DASHBOARD_PORT:-8502} 2>/dev/null || echo -e "Please open http://localhost:${CONFIG_DASHBOARD_PORT:-8502} in your browser"
 
 ## Open all UI dashboards in browser
 all-ui: ui config-ui
-	@echo "Opening Grafana dashboard in browser..."
-	xdg-open http://localhost:${GRAFANA_PORT:-3000} 2>/dev/null || open http://localhost:${GRAFANA_PORT:-3000} 2>/dev/null || echo "Please open http://localhost:${GRAFANA_PORT:-3000} in your browser"
+	@echo -e "Opening Grafana dashboard in browser..."
+	xdg-open http://localhost:${GRAFANA_PORT:-3000} 2>/dev/null || open http://localhost:${GRAFANA_PORT:-3000} 2>/dev/null || echo -e "Please open http://localhost:${GRAFANA_PORT:-3000} in your browser"
 
 ## Start all services and open all dashboards
 dashboard: dev
-	@echo "Starting all services and opening dashboards..."
+	@echo -e "Starting all services and opening dashboards..."
 	@sleep 5
 	@$(MAKE) all-ui
 
 ## Install Python dependencies locally (for development)
 python-deps:
-	@echo "Installing Python dependencies locally..."
+	@echo -e "Installing Python dependencies locally..."
 	cd python_app && pip install -r requirements.txt
 
 ## Update .env file with new variables from .env.example
 update-env:
-	@echo "Updating .env file with new variables from .env.example..."
+	@echo -e "Updating .env file with new variables from .env.example..."
 	@if [ ! -f .env ]; then \
-		echo ".env file not found. Creating from .env.example..."; \
+		echo -e ".env file not found. Creating from .env.example..."; \
 		cp .env.example .env; \
-		echo ".env file created. Please edit it with your configuration."; \
+		echo -e ".env file created. Please edit it with your configuration."; \
 	else \
-		echo "Checking for new variables..."; \
+		echo -e "Checking for new variables..."; \
 		awk -F= '$$1 !~ /^[[:space:]]*#/ && $$1 !~ /^[[:space:]]*$$/ {print $$1}' .env.example > .env.example.vars; \
 		awk -F= '$$1 !~ /^[[:space:]]*#/ && $$1 !~ /^[[:space:]]*$$/ {print $$1}' .env > .env.vars; \
-		echo "New variables found:"; \
+		echo -e "New variables found:"; \
 		for var in $$(grep -v -f .env.vars .env.example.vars); do \
 			grep "^$$var=" .env.example >> .env; \
-			echo "  - $$var"; \
+			echo -e "  - $$var"; \
 		done; \
 		rm -f .env.example.vars .env.vars; \
-		echo "Update complete."; \
+		echo -e "Update complete."; \
 	fi
 
 ## Check the API health status
 check-api:
-	@echo "Checking API health..."
+	@echo -e "Checking API health..."
 	curl -s http://localhost:${API_PORT:-3001}/health | jq .
 
 ## Clean up all containers, networks, and volumes
 clean:
-	@echo "Cleaning up..."
+	@echo -e "Cleaning up..."
 	docker-compose down -v --remove-orphans
-	@echo "Clean complete!"
+	@echo -e "Clean complete!"
 
 ## Run tests
 test:
-	@echo "Running tests..."
+	@echo -e "Running tests..."
 	./scripts/test-flow.sh
 
 ## Create a backup
 backup:
-	@echo "Creating backup..."
+	@echo -e "Creating backup..."
 	./scripts/backup.sh
 
 ## Restore from backup
 restore:
-	@echo "WARNING: This will overwrite current data. Continue? [y/N] "
-	@read -p "" confirm && [ $$confirm = y ] || [ $$confirm = Y ] || (echo "Restore cancelled"; exit 1)
-	@echo "Restoring from backup..."
+	@echo -e "WARNING: This will overwrite current data. Continue? [y/N] "
+	@read -p "" confirm && [ $$confirm = y ] || [ $$confirm = Y ] || (echo -e "Restore cancelled"; exit 1)
+	@echo -e "Restoring from backup..."
 	# Add restore command here
 
 ## Setup environment file if it doesn't exist
 .env:
 	@if [ ! -f .env ]; then \
-		echo ".env file not found. Creating from .env.example..."; \
+		echo -e ".env file not found. Creating from .env.example..."; \
 		cp .env.example .env; \
-		echo ".env file created. Please edit it with your configuration."; \
+		echo -e ".env file created. Please edit it with your configuration."; \
 	fi
 
 ## Show help by default

@@ -150,6 +150,16 @@ def render_service_card(service_name, status, col_index, resource_usage):
         """, unsafe_allow_html=True)
     
     # Add status details section to explain why a service is unhealthy or stopped
+    # Make sure required keys exist in the status dictionary
+    if 'status' not in status:
+        status['status'] = 'unknown'
+    if 'health_status' not in status:
+        status['health_status'] = 'unknown'
+    if 'resource_usage' not in status:
+        status['resource_usage'] = {'cpu': 'N/A', 'memory': 'N/A'}
+    if 'port_mappings' not in status:
+        status['port_mappings'] = {}
+    
     # Create status details based on service status
     if status['status'] == 'running' and status['health_status'] == 'healthy':
         status_details = f"<div style='background-color: rgba(0, 255, 0, 0.1); border-left: 4px solid #00ff00; padding: 10px; margin-bottom: 15px;'><strong style='color: #00ff00;'>Status:</strong> {status['status'].upper()} ({status['health_status'].upper()})</div>"
@@ -164,7 +174,8 @@ def render_service_card(service_name, status, col_index, resource_usage):
                                "</ul>"
             alternatives_html = f"<br><span style='color: #aaaaaa;'>Similar containers found:</span>{alternatives_list}"
         
-        status_details = f"<div style='background-color: rgba(128, 128, 128, 0.1); border-left: 4px solid #888888; padding: 10px; margin-bottom: 15px;'><strong style='color: #888888;'>Status:</strong> {status['status'].upper()}<br><span style='color: #aaaaaa;'>{status.get('error', status['health_status'])}</span>{alternatives_html}</div>"
+        error_message = status.get('error', status.get('health_status', 'Container not running'))
+        status_details = f"<div style='background-color: rgba(128, 128, 128, 0.1); border-left: 4px solid #888888; padding: 10px; margin-bottom: 15px;'><strong style='color: #888888;'>Status:</strong> {status['status'].upper()}<br><span style='color: #aaaaaa;'>{error_message}</span>{alternatives_html}</div>"
     else:
         status_details = f"<div style='background-color: rgba(255, 165, 0, 0.1); border-left: 4px solid #ffa500; padding: 10px; margin-bottom: 15px;'><strong style='color: #ffa500;'>Status:</strong> {status['status'].upper()}<br><span style='color: #ffcc00;'>{status['health_status']}</span></div>"
     
@@ -221,15 +232,39 @@ def render_service_card(service_name, status, col_index, resource_usage):
     
     # Add log viewer button if the container is running
     if status['status'] == 'running':
-        # Add a native Streamlit button to view logs
-        if st.button(f"View Logs for {container_name}", key=f"logs_{container_name}"):
+        # Create a unique key for this container's logs
+        log_key = f"show_logs_{container_name}"
+        
+        # Initialize the session state for this container if it doesn't exist
+        if log_key not in st.session_state:
+            st.session_state[log_key] = False
+        
+        # Add a button to toggle log visibility
+        if st.button(f"View Logs for {container_name}", key=f"btn_{container_name}"):
+            # Toggle the log visibility state
+            st.session_state[log_key] = not st.session_state[log_key]
+            # Force a rerun to update the UI
+            st.experimental_rerun()
+        
+        # If logs should be shown, display them
+        if st.session_state[log_key]:
             # Get logs for the container
             env_vars = load_env_vars()
             log_lines = env_vars.get('LOG_LINES', '100')
             log_timeout = int(env_vars.get('LOG_TIMEOUT_SECONDS', '10'))
             
-            logs, timestamp = get_container_logs(container_name, log_lines, log_timeout)
-            
-            # Display logs in a Streamlit expander
-            with st.expander(f"Logs for {container_name} (Last updated: {timestamp})", expanded=True):
-                st.text_area("Container Logs", logs, height=400)
+            try:
+                logs, timestamp = get_container_logs(container_name, int(log_lines), None)
+                
+                # Display logs in a Streamlit expander
+                with st.expander(f"Logs for {container_name} (Last updated: {timestamp})", expanded=True):
+                    # Add a close button
+                    if st.button("Close Logs", key=f"close_{container_name}"):
+                        st.session_state[log_key] = False
+                        st.experimental_rerun()
+                    
+                    # Display the logs
+                    st.text_area("Container Logs", logs, height=400)
+            except Exception as e:
+                st.error(f"Error getting logs for {container_name}: {str(e)}")
+                st.session_state[log_key] = False

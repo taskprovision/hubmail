@@ -28,19 +28,31 @@ def get_container_logs(container_name: str, lines: Optional[int] = None, timesta
     if timestamp and (current_time - timestamp).total_seconds() < log_timeout:
         return "Logs are rate limited. Please try again later.", timestamp
     
+    # Check if container exists first
+    if not check_container_exists(container_name):
+        return f"Container '{container_name}' does not exist or is not running.", current_time
+    
     try:
-        # Run docker logs command
-        result = subprocess.run(
+        # Run docker logs command with a timeout to prevent hanging
+        process = subprocess.Popen(
             ['docker', 'logs', '--tail', str(lines), container_name],
-            capture_output=True,
-            text=True,
-            check=True
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
         )
-        return result.stdout, current_time
-    except subprocess.CalledProcessError as e:
-        return f"Error getting logs: {e.stderr}", current_time
+        
+        # Wait for the process to complete with a timeout
+        try:
+            stdout, stderr = process.communicate(timeout=log_timeout)
+            if process.returncode != 0:
+                return f"Error getting logs: {stderr}", current_time
+            return stdout if stdout else "No logs available for this container.", current_time
+        except subprocess.TimeoutExpired:
+            # Kill the process if it times out
+            process.kill()
+            return "Log retrieval timed out. The container might be producing too many logs.", current_time
     except Exception as e:
-        return f"Error: {str(e)}", current_time
+        return f"Error retrieving logs: {str(e)}", current_time
 
 def check_container_exists(container_name: str) -> bool:
     """Check if a Docker container exists"""

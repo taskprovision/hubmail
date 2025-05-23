@@ -15,10 +15,11 @@ from typing import Dict, List, Any, Optional, Tuple
 # Import our modules
 from modules.env_loader import load_env_vars
 from modules.docker_utils import get_container_logs, get_container_ports, get_resource_usage
-from modules.ui_components import render_service_card
+from modules.ui_components_fix import render_service_card
 from modules.service_status import check_service_status, get_all_service_statuses, load_services_config
 from modules.config_utils import load_config_files, categorize_config_files
-from modules.docker_compose_finder import display_docker_compose_tabs, get_all_services, find_docker_compose_files
+from modules.ui_components_fix import render_service_card, display_docker_compose_tab
+from modules.docker_compose_finder import get_all_services, find_docker_compose_files
 
 # Load environment variables
 env_vars = load_env_vars()
@@ -344,7 +345,7 @@ def main():
         display_service_status_tab(services_config)
     
     with tab2:
-        display_docker_compose_tabs()
+        display_docker_compose_tab()
     
     with tab3:
         display_config_viewer_tab()
