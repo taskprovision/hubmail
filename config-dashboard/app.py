@@ -186,6 +186,32 @@ def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str])
     if 'services' not in compose_data:
         return services_status
     
+    # First, create a mapping of container names to service names
+    container_to_service = {}
+    for service_name, service_config in compose_data['services'].items():
+        container_name = service_config.get('container_name', service_name)
+        container_to_service[container_name] = service_name
+    
+    # Get all running containers
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--format", "{{.Names}}:{{.Status}}"], 
+            capture_output=True, 
+            text=True,
+            check=False
+        )
+        running_containers = {}
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    container_name = parts[0].strip()
+                    container_status = parts[1].strip()
+                    running_containers[container_name] = container_status
+    except Exception as e:
+        st.error(f"Error getting container status: {str(e)}")
+        running_containers = {}
+    
     for service_name, service_config in compose_data['services'].items():
         # Default status
         status = {
@@ -229,22 +255,42 @@ def check_service_status(compose_data: Dict[str, Any], env_vars: Dict[str, str])
                             status["url"] = f"http://localhost:{host_port}"
                         break
         
-        # Check if service is running using docker-compose ps
-        try:
-            result = subprocess.run(
-                ["docker-compose", "ps", "-q", status["container_name"]], 
-                capture_output=True, 
-                text=True,
-                check=False
-            )
-            if result.stdout.strip():
-                status["status"] = "running"
+        # Check if container is running
+        container_name = status["container_name"]
+        if container_name in running_containers:
+            container_status = running_containers[container_name]
+            
+            # Set basic status
+            status["status"] = "running"
+            status["status_code"] = 1
+            
+            # Check for health status in the container status string
+            if "(healthy)" in container_status:
+                status["status"] = "healthy"
+                status["status_code"] = 2
+            elif "(unhealthy)" in container_status:
+                status["status"] = "unhealthy"
+                status["status_code"] = 0
+            elif "(health: starting)" in container_status:
+                status["status"] = "starting"
                 status["status_code"] = 1
-            else:
-                status["status"] = "stopped"
-                status["status_code"] = -1
-        except Exception as e:
-            status["error"] = str(e)
+        else:
+            # Try to check if container exists but is stopped
+            try:
+                result = subprocess.run(
+                    ["docker", "ps", "-a", "--filter", f"name={container_name}", "--format", "{{.Status}}"], 
+                    capture_output=True, 
+                    text=True,
+                    check=False
+                )
+                if result.stdout.strip():
+                    status["status"] = "stopped"
+                    status["status_code"] = -1
+                else:
+                    status["status"] = "not created"
+                    status["status_code"] = -2
+            except Exception as e:
+                status["error"] = str(e)
         
         # If service is running and has a URL, check if it's responding
         if status["status"] == "running" and status["url"]:
