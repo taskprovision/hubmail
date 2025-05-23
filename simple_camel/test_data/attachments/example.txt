@@ -1,0 +1,7 @@
+To jest przykładowy plik tekstowy do testowania załączników.
+Zawiera kilka linii tekstu, które mogą być używane do testowania przetwarzania załączników.
+
+System HubMail powinien automatycznie zapisać ten plik w odpowiednim katalogu.
+
+Pozdrawiam,
+System Testowy

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Serwer SMTP i IMAP do testów
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: hubmail-mailhog
+    ports:
+      - "8025:8025" # Interfejs webowy
+      - "1025:1025" # SMTP
+      - "1143:1143" # IMAP (symulowany przez MailHog)
+    networks:
+      - hubmail-network
+    volumes:
+      - mailhog-data:/data
+    restart: unless-stopped
+
+  # Aplikacja HubMail
+  hubmail:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hubmail-app
+    depends_on:
+      - mailhog
+    ports:
+      - "${DASHBOARD_PORT:-8000}:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+      - ./attachments:/app/attachments
+      - ./logs:/app/logs
+    networks:
+      - hubmail-network
+    restart: unless-stopped
+    command: python start.py
+
+networks:
+  hubmail-network:
+    driver: bridge
+
+volumes:
+  mailhog-data:
