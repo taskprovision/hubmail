@@ -1,0 +1,38 @@
+// HubMail Email Processing Workflow
+digraph {
+	fontname=Arial fontsize=14 rankdir=LR ratio=fill size="8,5"
+	node [fillcolor=lightblue fontname=Arial fontsize=12 margin="0.2,0.1" shape=box style=filled]
+	edge [fontname=Arial fontsize=10]
+	fetch [label="Fetch New Emails
+(email_service.py)"]
+	process [label="Process Emails
+(email_processor.py)"]
+	analyze [label="LLM Analysis
+(llm_service.py)"]
+	notify [label="Send Notifications
+(notification_service.py)"]
+	mark [label="Mark as Processed
+(email_service.py)"]
+	fetch -> process [label="emails[]"]
+	process -> analyze [label=email]
+	analyze -> notify [label=analysis]
+	notify -> mark [label=email_id]
+	node [fillcolor=lightgreen shape=ellipse style=filled]
+	api_health [label="/health"]
+	api_test [label="/api/test-analysis"]
+	api_check [label="/api/check-emails"]
+	api_emails [label="/api/emails"]
+	api_test -> analyze [style=dashed]
+	api_check -> fetch [style=dashed]
+	subgraph cluster_models {
+		fillcolor=lightyellow label="Data Models" style=filled
+		node [fillcolor=white shape=record style=filled]
+		email_model [label="Email
+{id, from, subject, body, date}"]
+		analysis_model [label="EmailAnalysis
+{id, email_id, classification,
+priority, summary, action_items}"]
+	}
+	email_model -> process [style=dotted]
+	analyze -> analysis_model [style=dotted]
+}
