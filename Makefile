@@ -1,85 +1,80 @@
-.PHONY: help install start stop restart status logs clean test backup restore
-
-# Colors
-GREEN  := $(shell tput -Txterm setaf 2)
-YELLOW := $(shell tput -Txterm setaf 3)
-WHITE  := $(shell tput -Txterm setaf 7)
-RESET  := $(shell tput -Txterm sgr0)
+.PHONY: help install dev stop restart status logs clean test backup restore
 
 ## Show this help
 help:
-	@echo ''
-	@echo 'Usage:'
-	@echo '  ${YELLOW}make${RESET} ${GREEN}<target>${RESET}'
-	@echo ''
-	@echo 'Targets:'
-	@awk '/(^[a-zA-Z\-\_0-9]+:.*?##.*$$)|(^##)/ { \
-		htps://www.gnu.org/software/make/manual/html_node/Special-Variables.html#Special-Variables
-		if ($$1 ~ /^[a-z\-]+:.*?##.*$$/) { \
-			printf "  ${YELLOW}%-20s${GREEN}%s${RESET}\n", $$1, $$2 \
-		} else if ($$1 ~ /^## .*$$/) { \
-			printf "${YELLOW}%s${RESET}\n", substr($$1,4) \
-		} \
-	}' $(MAKEFILE_LIST)
+	@echo '\nUsage: make [target]\n'
+	@echo 'Available targets:'
+	@echo '  install    Install project dependencies'
+	@echo '  dev        Start all services in development mode'
+	@echo '  stop       Stop all services'
+	@echo '  restart    Restart all services'
+	@echo '  status     Show services status'
+	@echo '  logs       Show services logs (follow mode)'
+	@echo '  clean      Clean up all containers, networks, and volumes'
+	@echo '  test       Run tests'
+	@echo '  backup     Create a backup of the current state'
+	@echo '  restore    Restore from the latest backup'
 
 ## Install project dependencies
-install: .env ## Install project dependencies
-	@echo "${GREEN}🚀 Installing project dependencies...${RESET}"
+install: .env
+	@echo "Installing project dependencies..."
 	./install.sh
 
 ## Start all services
-dev: .env ## Start all services in development mode
-	@echo "${GREEN}🚀 Starting HubMail in development mode...${RESET}
-${YELLOW}Access services at:${RESET}
-- Node-RED: http://localhost:1880\n- Grafana: http://localhost:3000 (admin/admin)\n- Prometheus: http://localhost:9090${RESET}"
+dev: .env
+	@echo "Starting HubMail in development mode..."
+	@echo "Access services at:"
+	@echo "- Node-RED: http://localhost:1880"
+	@echo "- Grafana: http://localhost:3000 (admin/admin)"
+	@echo "- Prometheus: http://localhost:9090"
 	docker-compose up -d
 
 ## Stop all services
-stop: ## Stop all services
-	@echo "${YELLOW}🛑 Stopping all services...${RESET}"
+stop:
+	@echo "Stopping all services..."
 	docker-compose down
 
 ## Restart all services
-restart: stop dev ## Restart all services
+restart: stop dev
 
 ## Show services status
-status: ## Show services status
-	@echo "${GREEN}📊 Services status:${RESET}"
+status:
+	@echo "Services status:"
 	docker-compose ps
 
 ## Show services logs
-logs: ## Show services logs (follow mode)
+logs:
 	docker-compose logs -f
 
 ## Clean up all containers, networks, and volumes
-clean: ## Clean up all containers, networks, and volumes
-	@echo "${YELLOW}🧹 Cleaning up...${RESET}"
+clean:
+	@echo "Cleaning up..."
 	docker-compose down -v --remove-orphans
-	@echo "${GREEN}✅ Clean complete!${RESET}"
+	@echo "Clean complete!"
 
 ## Run tests
-test: ## Run tests
-	@echo "${GREEN}🧪 Running tests...${RESET}"
+test:
+	@echo "Running tests..."
 	./scripts/test-flow.sh
 
 ## Create a backup
-backup: ## Create a backup of the current state
-	@echo "${GREEN}💾 Creating backup...${RESET}"
+backup:
+	@echo "Creating backup..."
 	./scripts/backup.sh
 
 ## Restore from backup
-restore: ## Restore from the latest backup
-	@echo "${YELLOW}⚠️  WARNING: This will overwrite current data. Continue? [y/N] ${RESET}"
-	@read -p "" confirm && [ $$confirm = y ] || [ $$confirm = Y ] || (echo "${YELLOW}Restore cancelled${RESET}"; exit 1)
-	@echo "${GREEN}🔄 Restoring from backup...${RESET}"
+restore:
+	@echo "WARNING: This will overwrite current data. Continue? [y/N] "
+	@read -p "" confirm && [ $$confirm = y ] || [ $$confirm = Y ] || (echo "Restore cancelled"; exit 1)
+	@echo "Restoring from backup..."
 	# Add restore command here
 
 ## Setup environment file if it doesn't exist
 .env:
 	@if [ ! -f .env ]; then \
-		echo "${YELLOW}⚠️  .env file not found. Creating from .env.example...${RESET}"; \
+		echo ".env file not found. Creating from .env.example..."; \
 		cp .env.example .env; \
-		echo "${GREEN}✅ .env file created. Please edit it with your configuration.${RESET}"; \
+		echo ".env file created. Please edit it with your configuration."; \
 	fi
 
 ## Show help by default

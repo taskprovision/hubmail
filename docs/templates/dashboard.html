@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocPro - Service Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.1) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .service-card {
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+        .status-degraded { background-color: #ffc107; }
+        .status-not_configured { background-color: #6c757d; }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .health-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #e9ecef;
+        }
+
+        .health-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.5s ease;
+        }
+
+        .category-header {
+            color: white;
+            font-weight: bold;
+            margin: 2rem 0 1rem 0;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-server me-2"></i>
+                DocPro Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-light me-3" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    Refresh
+                </button>
+                <span class="text-white-50">
+                    Last updated: {{ last_updated }}
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- System Status -->
+        <div class="alert alert-info" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    {% if health_percentage >= 80 %}
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                    {% elif health_percentage >= 50 %}
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                    {% else %}
+                        <i class="fas fa-times-circle fa-2x text-danger"></i>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">System Health: {{ health_percentage }}%</h6>
+                    <div class="health-bar">
+                        <div class="health-progress" style="width: {{ health_percentage }}%;"></div>
+                    </div>
+                    <small>{{ online_count }} of {{ total_count }} services online</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services by Category -->
+        {% for category, category_services in services_by_category.items() %}
+        <div class="category-header">
+            <h4><i class="fas fa-layer-group me-2"></i>{{ category }} Services</h4>
+        </div>
+
+        <div class="row mb-4">
+            {% for service in category_services %}
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card service-card" onclick="openService('{{ service.url if service.url else '#' }}', '{{ service.name }}')">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="service-icon text-{{ service.color }}">
+                                <i class="{{ service.icon }}"></i>
+                            </div>
+                            <div class="text-end">
+                                <span class="status-indicator status-{{ service.status }}"></span>
+                                <small class="text-uppercase fw-bold">
+                                    {% if service.status == 'online' %}
+                                        Online
+                                    {% elif service.status == 'offline' %}
+                                        Offline
+                                    {% elif service.status == 'degraded' %}
+                                        Degraded
+                                    {% else %}
+                                        Not Config
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+
+                        <h5 class="card-title">{{ service.display_name }}</h5>
+                        <p class="card-text text-muted mb-3">{{ service.description }}</p>
+
+                        {% if service.url %}
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-link me-1"></i>
+                                {{ service.url }}
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-network-wired me-1"></i>
+                                Port: {{ service.port }}
+                            </small>
+
+                            {% if service.response_time %}
+                            <small class="text-success">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ service.response_time }}ms
+                            </small>
+                            {% endif %}
+                        </div>
+
+                        {% if service.error and service.status != 'not_configured' %}
+                        <div class="mt-2">
+                            <small class="text-danger">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                {{ service.error[:50] }}...
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <!-- Quick Actions -->
+        <div class="category-header">
+            <h4><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="service-icon text-primary">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h6>Analytics</h6>
+                        <button class="btn btn-outline-primary btn-sm" onclick="openKibana()">
+                            Open Kibana
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="service-icon text-success">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h6>Storage</h6>
+                        <button class="btn btn-outline-success btn-sm" onclick="openMinIO()">
+                            Open MinIO
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="service-icon text-danger">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h6>Workflows</h6>
+                        <button class="btn btn-outline-danger btn-sm" onclick="openNodeRED()">
+                            Open Node-RED
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="service-icon text-info">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h6>API</h6>
+                        <button class="btn btn-outline-info btn-sm" onclick="viewAPI()">
+                            View API
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Summary -->
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="fas fa-sliders-h me-2"></i>Configuration</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Service Ports</h6>
+                        {% for service in services if service.url %}
+                        <div class="mb-1">
+                            <strong>{{ service.display_name }}:</strong> {{ service.port }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>System Info</h6>
+                        <div class="mb-1"><strong>Services:</strong> {{ services|length }}</div>
+                        <div class="mb-1"><strong>Online:</strong> {{ online_count }}</div>
+                        <div class="mb-1"><strong>Health:</strong> {{ health_percentage }}%</div>
+                        <div class="mb-1"><strong>Config:</strong> {{ config|length }} variables</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center text-white-50 mt-4">
+            <p>DocPro Dashboard | <a href="/api/services" class="text-white-50">API</a> | Generated: {{ last_updated }}</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openService(url, serviceName) {
+            if (url && url !== '#') {
+                console.log(`Opening ${serviceName}: ${url}`);
+                window.open(url, '_blank');
+            } else {
+                alert(`Service ${serviceName} is not configured or not available.`);
+            }
+        }
+
+        function openKibana() {
+            const kibanaService = {{ services|selectattr("name", "equalto", "kibana")|list|first|tojson }};
+            if (kibanaService && kibanaService.url) {
+                window.open(kibanaService.url, '_blank');
+            } else {
+                alert('Kibana service not available');
+            }
+        }
+
+        function openMinIO() {
+            const minioService = {{ services|selectattr("name", "equalto", "minio")|list|first|tojson }};
+            if (minioService && minioService.url) {
+                window.open(minioService.url, '_blank');
+            } else {
+                alert('MinIO service not available');
+            }
+        }
+
+        function openNodeRED() {
+            const nodeRedService = {{ services|selectattr("name", "equalto", "node-red")|list|first|tojson }};
+            if (nodeRedService && nodeRedService.url) {
+                window.open(nodeRedService.url, '_blank');
+            } else {
+                alert('Node-RED service not available');
+            }
+        }
+
+        function viewAPI() {
+            window.open('/api/services', '_blank');
+        }
+
+        async function refreshDashboard() {
+            try {
+                const response = await fetch('/api/services');
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Failed to refresh dashboard');
+                }
+            } catch (error) {
+                console.error('Error refreshing:', error);
+                alert('Error refreshing dashboard');
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshDashboard, 30000);
+
+        console.log('DocPro Dashboard loaded');
+        console.log('Auto-refresh enabled (30s)');
+    </script>
+</body>
+</html>

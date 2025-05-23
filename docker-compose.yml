@@ -4,96 +4,111 @@ services:
     container_name: email-node-red
     restart: unless-stopped
     ports:
-      - "1880:1880"
+      - "${NODERED_PORT:-1880}:1880"
     volumes:
-      - ./data/node-red:/data
+      - ${VOLUME_NODE_RED:-./data/node-red}:/data
       - ./config/node-red:/config
     environment:
-      - TZ=Europe/Warsaw
-      - NODE_RED_ENABLE_PROJECTS=true
-    networks:
-      - email-net
+      - TZ=${NODERED_TZ:-Europe/Warsaw}
+      - NODE_RED_ENABLE_PROJECTS=${NODERED_ENABLE_PROJECTS:-true}
+
 
   ollama:
     image: ollama/ollama:latest
     container_name: email-ollama
     restart: unless-stopped
     ports:
-      - "11435:11434"  # Changed port to avoid conflict
+      - "${OLLAMA_PORT:-11435}:${OLLAMA_CONTAINER_PORT:-11434}"
     volumes:
-      - ollama-storage:/root/.ollama
+      - ${VOLUME_OLLAMA:-./data/ollama}:/root/.ollama
     environment:
-      - OLLAMA_ORIGINS=*
-    networks:
-      - email-net
+      - OLLAMA_ORIGINS=${OLLAMA_ORIGINS:-*}
+
 
   prometheus:
     image: prom/prometheus:latest
     container_name: email-prometheus
     restart: unless-stopped
-    user: "${UID}:${GID:-1000}"
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ./config/prometheus:/etc/prometheus
-      - prometheus-data:/prometheus
+      - ${VOLUME_PROMETHEUS:-./data/prometheus}:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.enable-lifecycle'
-      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}'
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
-    networks:
-      - email-net
+
 
   grafana:
     image: grafana/grafana:latest
     container_name: email-grafana
     restart: unless-stopped
-    user: "${UID}:${GID:-1000}"
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     ports:
-      - "3000:3000"
+      - "${GRAFANA_PORT:-3000}:3000"
     volumes:
-      - grafana-storage:/var/lib/grafana
+      - ${VOLUME_GRAFANA:-./data/grafana}:/var/lib/grafana
       - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
       - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=${GRAFANA_ALLOW_SIGN_UP:-false}
+      - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-grafana-piechart-panel}
       - GF_PATHS_CONFIG=/etc/grafana/grafana.ini
       - GF_PATHS_DATA=/var/lib/grafana
       - GF_PATHS_LOGS=/var/log/grafana
       - GF_PATHS_PLUGINS=/var/lib/grafana/plugins
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-    networks:
-      - email-net
+
 
   redis:
     image: redis:alpine
     container_name: email-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - redis-data:/data
+      - ${VOLUME_REDIS:-./data/redis}:/data
     command: redis-server --appendonly yes
-    networks:
-      - email-net
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
 
-networks:
-  email-net:
-    driver: bridge
+
+
 
 volumes:
   node-red-storage:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_NODE_RED:-./data/node-red}
   ollama-storage:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_OLLAMA:-./data/ollama}
   prometheus-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_PROMETHEUS:-./data/prometheus}
   grafana-storage:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_GRAFANA:-./data/grafana}
   redis-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_REDIS:-./data/redis}

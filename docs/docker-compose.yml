@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # DocPro Dashboard Service
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: docpro-dashboard
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_PORT:-8000}:8000"
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./docker-compose.yml:/app/docker-compose.yml:ro
+      - ./templates:/app/templates:ro
+      - ./static:/app/static:ro
+    environment:
+      - DASHBOARD_HOST=0.0.0.0
+      - DASHBOARD_PORT=8000
+      - ENV_FILE=/app/.env
+      - COMPOSE_FILE=/app/docker-compose.yml
+    networks:
+      - ${NETWORK_NAME:-doc-net}
+    depends_on:
+      - elasticsearch
+      - kibana
+      - node-red
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/services"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  doc-net:
+    external: true
