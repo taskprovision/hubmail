@@ -13,7 +13,7 @@ Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitori
 
 1. Sklonuj repozytorium i przejdź do katalogu:
    ```bash
-   git clone https://github.com/your-username/hubmail.git
+   git clone https://github.com/taskprovision/hubmail.git
    cd hubmail
    ```
 
@@ -97,6 +97,6 @@ Każdy email przechodzi przez następujący proces:
 
 ## 📝 Licencja
 
-Ten projekt jest dostępny na licencji MIT. Więcej informacji w pliku [LICENSE](LICENSE).
+Ten projekt jest dostępny na licencji Apache. Więcej informacji w pliku [LICENSE](LICENSE).
 
 

@@ -1,10 +1,10 @@
-# DocPro - User Guide
+# HubMail - User Guide
 
 ## 📚 Table of Contents
 
 1. [Getting Started](#getting-started)
 2. [Dashboard Overview](#dashboard-overview)
-3. [Document Upload & Processing](#document-upload--processing)
+3. [Email Processing](#email-processing)
 4. [Using Services](#using-services)
 5. [Searching & Analytics](#searching--analytics)
 6. [Workflow Management](#workflow-management)
@@ -36,9 +36,10 @@ python docs/generate-dashboard.py
 open web/index.html
 
 # 3. Check all services are running
-curl http://localhost:9200  # Elasticsearch
-curl http://localhost:5601  # Kibana  
 curl http://localhost:1880  # Node-RED
+curl http://localhost:11435 # Ollama
+curl http://localhost:9090  # Prometheus
+curl http://localhost:3000  # Grafana
 ```
 
 ---
@@ -48,10 +49,10 @@ curl http://localhost:1880  # Node-RED
 ### Main Dashboard Components
 
 #### 📊 **Statistics Panel**
-- **Documents Processed**: Total number of documents analyzed
-- **Compliance Rate**: Percentage of documents meeting standards
+- **Emails Processed**: Total number of emails analyzed
+- **Classification Accuracy**: Percentage of correctly classified emails
 - **Active Alerts**: Current issues requiring attention
-- **Average Processing Time**: Time per document in seconds
+- **Average Processing Time**: Time per email in milliseconds
 
 #### 🖥️ **Service Status**
 Real-time status monitoring for all components:
@@ -60,72 +61,85 @@ Real-time status monitoring for all components:
 - 🟡 **Checking**: Status being verified
 
 #### ⚡ **Quick Actions**
-- **Upload Document**: Start document processing
-- **Recent Documents**: View latest processed files
-- **View Alerts**: Check compliance issues
+- **Process Email**: Manually submit an email for processing
+- **Recent Emails**: View latest processed emails
+- **View Alerts**: Check high-priority emails
 - **System Info**: Display configuration details
 
 ---
 
-## 📄 Document Upload & Processing
+## 📧 Email Processing
 
-### Supported File Types
+### Supported Email Sources
 
 Based on your configuration:
 ```
-PDF, DOCX, DOC, TXT, PNG, JPG, JPEG, TIFF, RTF, ODT
+IMAP, POP3, SMTP, Microsoft Graph API, Gmail API
 ```
 
-### Upload Methods
+### Processing Methods
 
-#### Method 1: File System (Recommended)
+#### Method 1: Automatic Email Checking
 ```bash
-# Copy files to input directory
-cp your-document.pdf data/input/
+# System automatically checks for new emails based on your configuration
+# Check interval is set in .env file: EMAIL_CHECK_INTERVAL=300 (in seconds)
 
-# Files are automatically processed
-ls data/processed/  # Check results
+# Manually trigger email check
+curl -X POST "http://localhost:1880/api/email/check"
 ```
 
-#### Method 2: MinIO Console
-1. Open MinIO Console: `http://localhost:9001`
-2. Login: `minioadmin` / `minioadmin123`
-3. Navigate to `documents` bucket
-4. Upload files via web interface
-
-#### Method 3: Node-RED Interface
+#### Method 2: Manual Email Submission
 1. Open Node-RED: `http://localhost:1880`
-2. Navigate to file upload flow
-3. Use web form to upload documents
+2. Navigate to email submission flow
+3. Use web form to submit email details
+
+#### Method 3: API Submission
+```bash
+# Submit email via API
+curl -X POST "http://localhost:1880/api/email/process" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Meeting Request",
+    "body": "Can we schedule a meeting for tomorrow?",
+    "date": "2024-01-20T10:30:00Z"
+  }'
+```
 
 ### Processing Workflow
 
 ```mermaid
 graph LR
-    A[Document Upload] --> B[File Detection]
-    B --> C[Text Extraction]
-    C --> D[AI Analysis]
-    D --> E[Compliance Check]
+    A[Email Received] --> B[Metadata Extraction]
+    B --> C[Content Analysis]
+    C --> D[AI Classification]
+    D --> E[Priority Assignment]
     E --> F[Storage & Indexing]
-    F --> G[Alerts & Notifications]
+    F --> G[Alerts & Auto-Replies]
 ```
 
-### Document Types & Analysis
+### Email Classifications & Processing
 
-#### 📋 **Certificates of Conformity (COR)**
-- **Validation**: Certificate number, validity dates
-- **Compliance**: Standards verification (EN ISO, PED, etc.)
-- **Alerts**: Expiring certificates, missing signatures
+#### 🔴 **URGENT**
+- **Criteria**: Time-sensitive, critical business impact
+- **Actions**: Immediate notifications, high-priority tagging
+- **Auto-Reply**: Acknowledgment of urgent status with ETA
 
-#### 💰 **Invoices**
-- **Data Extraction**: Amount, date, supplier, line items
-- **Validation**: Math verification, format checks
-- **Approval**: High-value invoice routing (>€10,000)
+#### 🔵 **BUSINESS**
+- **Criteria**: Work-related, standard business communications
+- **Actions**: Categorization by department/topic
+- **Auto-Reply**: Standard business acknowledgment
 
-#### 📝 **Contracts**
-- **Risk Assessment**: Financial, legal, operational risks
-- **Key Terms**: Payment terms, liability, termination
-- **Alerts**: High-risk clauses, unfavorable terms
+#### 🟢 **PERSONAL**
+- **Criteria**: Non-business, personal communications
+- **Actions**: Lower priority tagging, separate folder
+- **Auto-Reply**: Optional personal acknowledgment
+
+#### ⚪ **SPAM**
+- **Criteria**: Unsolicited, suspicious, or marketing emails
+- **Actions**: Quarantine, spam folder placement
+- **Auto-Reply**: None (to avoid confirming valid email)
 
 ---
 
@@ -133,271 +147,255 @@ graph LR
 
 ### Node-RED (Port: 1880)
 
-**Purpose**: Visual workflow designer for document processing
+**Purpose**: Visual workflow designer for email processing
 
 **Key Features**:
 - Drag-and-drop flow creation
-- Real-time document processing
+- Real-time email processing
 - Custom business logic
 - Integration with external systems
 
 **Common Tasks**:
 ```javascript
-// Example: Custom document classifier
-if (msg.filename.includes('invoice')) {
-    msg.documentType = 'INVOICE';
-    return [msg, null, null];
-} else if (msg.filename.includes('contract')) {
-    msg.documentType = 'CONTRACT';
-    return [null, msg, null];
+// Example: Custom email classifier
+if (msg.payload.subject.includes('urgent')) {
+    msg.classification = 'URGENT';
+    return [msg, null, null, null];
+} else if (msg.payload.from.includes('boss')) {
+    msg.classification = 'BUSINESS';
+    return [null, msg, null, null];
+} else if (msg.payload.subject.includes('personal')) {
+    msg.classification = 'PERSONAL';
+    return [null, null, msg, null];
 } else {
-    msg.documentType = 'OTHER';
-    return [null, null, msg];
+    msg.classification = 'SPAM';
+    return [null, null, null, msg];
 }
 ```
 
-### Kibana Analytics (Port: 5601)
+### Grafana Analytics (Port: 3000)
 
-**Purpose**: Search, analyze, and visualize document data
+**Purpose**: Visualize email processing metrics and trends
 
 **Key Dashboards**:
-- **Document Overview**: Processing statistics and trends
-- **Compliance Monitoring**: Alerts and issues tracking
-- **Performance Metrics**: System efficiency analysis
+- **Email Overview**: Processing statistics and trends
+- **Classification Accuracy**: AI model performance
+- **System Performance**: Processing efficiency analysis
 
-**Search Examples**:
-```kql
-# Find high-value invoices
-analysis_results.total_amount > 10000
+**Dashboard Examples**:
+- Email volume by hour/day/week
+- Classification distribution pie chart
+- Processing time histogram
+- Auto-reply effectiveness
 
-# Search for compliance issues
-analysis_results.compliance_status: "NON_COMPLIANT"
+### Prometheus (Port: 9090)
 
-# Recent documents by type
-document_type: "CONTRACT" AND processing_timestamp > "now-7d"
+**Purpose**: Time-series metrics collection
+
+**Key Metrics**:
+- `email_processed_total`: Total emails processed
+- `email_processing_duration_seconds`: Processing time
+- `email_classification_count{type="URGENT"}`: Count by type
+- `email_auto_reply_sent_total`: Auto-replies sent
+
+**Query Examples**:
+```promql
+# Average processing time over last hour
+rate(email_processing_duration_seconds_sum[1h]) / rate(email_processing_duration_seconds_count[1h])
+
+# Email classification distribution
+email_classification_count{type="URGENT"} / sum(email_classification_count)
+
+# System load during email processing
+node_cpu_seconds_total{mode="system"} / node_cpu_seconds_total{mode="idle"}
 ```
 
-### MinIO Storage (Port: 9001)
+### Ollama (Port: 11435)
 
-**Purpose**: Object storage for documents and processed files
+**Purpose**: AI model for email classification and analysis
 
-**Bucket Structure**:
-- `documents`: Original uploaded files
-- `processed`: AI-analyzed documents
-- `templates`: Document processing templates
-
-**Management Tasks**:
-- Browse stored documents
-- Download processed results
-- Set retention policies
-- Monitor storage usage
-
-### Elasticsearch (Port: 9200)
-
-**Purpose**: Search engine and document indexing
+**Key Features**:
+- Local LLM model execution
+- Email content analysis
+- Intent classification
+- Entity extraction
 
 **API Examples**:
 ```bash
-# Search documents
-curl "http://localhost:9200/documents/_search?q=invoice"
-
-# Get document by ID
-curl "http://localhost:9200/documents/_doc/ABC123"
-
-# Check indices
-curl "http://localhost:9200/_cat/indices?v"
-```
-
-### Apache Tika (Port: 9998)
-
-**Purpose**: Document text extraction and parsing
-
-**Testing**:
-```bash
-# Extract text from document
-curl -T document.pdf http://localhost:9998/tika
-
-# Get metadata
-curl -T document.pdf http://localhost:9998/meta
-
-# Detect document type
-curl -T document.pdf http://localhost:9998/detect
-```
-
-### Ollama AI (Port: 11437)
-
-**Purpose**: Local AI models for document analysis
-
-**Available Models**:
-- `llama2:13b`: General document analysis
-- `mistral:7b`: Faster processing for simple tasks
-
-**API Usage**:
-```bash
-# List available models
-curl http://localhost:11437/api/tags
-
-# Generate analysis
-curl -X POST http://localhost:11437/api/generate \
-  -d '{"model": "llama2:13b", "prompt": "Analyze this invoice: ..."}'
+# Generate email classification
+curl -X POST "http://localhost:11435/api/generate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama2:7b",
+    "prompt": "Classify this email: Subject: Urgent Meeting, From: boss@company.com, Body: We need to discuss the project status immediately.",
+    "stream": false
+  }'
 ```
 
 ---
 
 ## 🔍 Searching & Analytics
 
-### Kibana Discovery
+### Email Search
 
-1. **Open Kibana**: `http://localhost:5601`
-2. **Navigate to Discover**
-3. **Select Index Pattern**: `documents*` or `compliance-alerts*`
+**Search Interface**: Node-RED Dashboard or API
 
-### Common Search Patterns
+**Search Parameters**:
+- `from`: Sender email address
+- `to`: Recipient email address
+- `subject`: Email subject line
+- `body`: Email body content
+- `date`: Date range
+- `classification`: Email classification
+- `has_attachments`: Boolean filter
 
-#### Find Documents by Type
-```kql
-document_type: "INVOICE"
-document_type: "CONTRACT" 
-document_type: "COR"
+**Search Examples**:
+```bash
+# Find urgent emails from last week
+curl "http://localhost:1880/api/email/search?classification=URGENT&from=2024-01-01"
+
+# Search for specific content
+curl "http://localhost:1880/api/email/search?q=project+status"
+
+# Advanced search with JSON
+curl -X POST "http://localhost:1880/api/email/search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {
+      "bool": {
+        "must": [
+          {"match": {"subject": "meeting"}},
+          {"range": {"date": {"gte": "now-7d"}}}
+        ]
+      }
+    }
+  }'
 ```
 
-#### Search by Date Range
-```kql
-processing_timestamp: [2024-01-01 TO 2024-12-31]
-@timestamp: [now-7d TO now]
-```
+### Analytics Reports
 
-#### Filter by Analysis Results
-```kql
-analysis_results.confidence_score: [0.8 TO 1.0]
-analysis_results.risk_level: "HIGH"
-analysis_results.compliance_status: "COMPLIANT"
-```
+**Standard Reports**:
+- **Daily Summary**: Email volume and classification breakdown
+- **Processing Efficiency**: Average processing times
+- **Classification Accuracy**: AI model performance
+- **Auto-Reply Effectiveness**: Response rates and timing
 
-#### Text Search in Content
-```kql
-extracted_text: "certificate of conformity"
-extracted_text: "invoice" AND extracted_text: "€"
-```
-
-### Creating Visualizations
-
-#### Document Processing Trends
-```json
-{
-  "visualization": "line_chart",
-  "x_axis": "processing_timestamp",
-  "y_axis": "count",
-  "split_series": "document_type"
-}
-```
-
-#### Compliance Rate by Document Type
-```json
-{
-  "visualization": "pie_chart",
-  "field": "analysis_results.compliance_status",
-  "filter": "document_type: COR"
-}
-```
+**Custom Reports**:
+1. Open Grafana: `http://localhost:3000`
+2. Navigate to Dashboards
+3. Use Dashboard variables to filter by date, classification, etc.
+4. Export as PDF or CSV
 
 ---
 
-## ⚙️ Workflow Management
-
-### Node-RED Flow Examples
-
-#### Basic Document Processing Flow
-1. **File Watcher** → Monitor `data/input/`
-2. **Type Classifier** → Determine document type
-3. **Tika Extractor** → Extract text content
-4. **AI Analyzer** → LLM analysis
-5. **Storage** → Save to Elasticsearch
-
-#### Compliance Alert Flow
-1. **Elasticsearch Query** → Find non-compliant docs
-2. **Filter** → Check severity level
-3. **Notification** → Send alerts (email/Slack)
-4. **Dashboard Update** → Refresh statistics
-
-#### Custom Business Logic
-```javascript
-// Example: Custom invoice approval logic
-if (msg.analysis.total_amount > 50000) {
-    msg.approval_required = "director";
-    msg.priority = "high";
-} else if (msg.analysis.total_amount > 10000) {
-    msg.approval_required = "manager"; 
-    msg.priority = "medium";
-} else {
-    msg.approval_required = "auto";
-    msg.priority = "low";
-}
-```
+## 🔄 Workflow Management
 
 ### Creating Custom Workflows
 
-1. **Open Node-RED**: `http://localhost:1880`
-2. **Create New Flow**: Click "+" tab
-3. **Drag Components**: From left palette
-4. **Configure Nodes**: Double-click to edit
-5. **Connect Flows**: Drag between output/input ports
-6. **Deploy**: Click "Deploy" button
+**Using Node-RED**:
+1. Open Node-RED: `http://localhost:1880`
+2. Import or create new flow
+3. Add email processing nodes
+4. Configure classification logic
+5. Set up actions and notifications
+6. Deploy changes
+
+**Example Workflow: VIP Sender**:
+```
+[Email In] → [Filter VIP] → [Set Priority] → [Notify Slack] → [Auto-Reply] → [Store]
+```
+
+### Auto-Reply Templates
+
+**Template Variables**:
+- `{{sender}}`: Email sender name
+- `{{recipient}}`: Email recipient
+- `{{subject}}`: Original subject
+- `{{date}}`: Email received date
+- `{{classification}}`: Email classification
+
+**Example Template**:
+```html
+<p>Dear {{sender}},</p>
+
+<p>Thank you for your email regarding "{{subject}}".</p>
+
+<p>This is an automated response confirming we've received your message
+and it has been classified as {{classification}}.</p>
+
+<p>We'll respond within:
+{{#if classification == 'URGENT'}}
+  2 hours
+{{else if classification == 'BUSINESS'}}
+  24 hours
+{{else}}
+  48 hours
+{{/if}}
+</p>
+
+<p>Best regards,<br>
+HubMail System</p>
+```
+
+### Notification Channels
+
+**Available Channels**:
+- **Slack**: Real-time notifications
+- **Email**: Summary reports
+- **SMS**: Urgent alerts (requires configuration)
+- **Webhook**: Custom integrations
+
+**Slack Configuration**:
+```bash
+# In .env file
+WEBHOOK_URL=https://hooks.slack.com/services/your-webhook-url
+WEBHOOK_ENABLED=true
+WEBHOOK_CHANNEL=#email-alerts
+```
 
 ---
 
-## 🔔 Monitoring & Alerts
+## 📊 Monitoring & Alerts
 
-### Alert Types
+### System Monitoring
 
-#### 🚨 **High Priority**
-- **Compliance Issues**: Non-compliant COR certificates
-- **Security Risks**: High-risk contract terms
-- **System Errors**: Processing failures
+**Key Metrics**:
+- **Email Volume**: Emails processed per minute/hour/day
+- **Processing Time**: Average and 95th percentile
+- **Classification Distribution**: Percentage by category
+- **Error Rate**: Failed processing attempts
+- **System Resources**: CPU, memory, disk usage
 
-#### ⚠️ **Medium Priority**
-- **High-Value Invoices**: Amounts over threshold
-- **Expiring Certificates**: Within 30 days
-- **Processing Delays**: Longer than expected
+**Viewing Metrics**:
+1. Open Grafana: `http://localhost:3000`
+2. Navigate to "System Overview" dashboard
+3. Adjust time range as needed
 
-#### ℹ️ **Low Priority**
-- **Information Notices**: New document types
-- **System Updates**: Configuration changes
-- **Statistics**: Daily processing summaries
+### Alert Configuration
 
-### Alert Channels
+**Alert Types**:
+- **System Alerts**: Service down, high resource usage
+- **Processing Alerts**: High error rate, slow processing
+- **Email Alerts**: Urgent emails, specific senders/keywords
 
-#### Kibana Dashboards
-- Real-time alert visualization
-- Historical trend analysis
-- Custom alert queries
+**Setting Up Alerts**:
+1. Open Grafana: `http://localhost:3000`
+2. Navigate to Alerting
+3. Create new alert rule
+4. Configure conditions and notifications
 
-#### System Notifications
-- Browser notifications
-- Dashboard status badges
-- Email alerts (if configured)
-
-#### External Integrations
-```bash
-# Slack webhook (if configured)
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
-
-# Email SMTP (if configured)  
-EMAIL_SMTP_HOST=smtp.company.com
-EMAIL_FROM=docpro@company.com
+**Example Alert Rule**:
+```yaml
+# Alert when URGENT emails are not processed within 5 minutes
+name: UrgentEmailDelayed
+expr: time() - max(email_received_timestamp{classification="URGENT"}) > 300
+for: 5m
+labels:
+  severity: critical
+annotations:
+  summary: Urgent email processing delayed
+  description: Urgent emails have not been processed in over 5 minutes
 ```
-
-### Alert Management
-
-#### View Active Alerts
-1. Open dashboard quick action "View Alerts"
-2. Filter by severity: `severity: "HIGH"`
-3. Sort by timestamp: newest first
-
-#### Resolve Alerts
-1. Investigate root cause in Kibana
-2. Take corrective action
-3. Update alert status if using custom workflow
 
 ---
 
@@ -405,124 +403,177 @@ EMAIL_FROM=docpro@company.com
 
 ### Common Issues
 
-#### Service Not Responding
+#### Email Connection Problems
 ```bash
-# Check service status
-docker-compose ps
+# Check email server connectivity
+nc -zv $EMAIL_SERVER $EMAIL_PORT
 
-# View logs
-docker-compose logs -f [service-name]
+# View detailed connection logs
+docker-compose logs node-red | grep "Email connection"
 
-# Restart service
-docker-compose restart [service-name]
+# Test email credentials
+curl -X POST "http://localhost:1880/api/email/test-connection"
 ```
 
-#### Document Not Processing
-1. **Check Input Folder**: Files present in `data/input/`?
-2. **File Format**: Supported format? Check configuration
-3. **File Size**: Under max limit? (Default: 50MB)
-4. **Node-RED Flow**: Deployed and active?
-
-#### Search Not Working
-1. **Elasticsearch Status**: Green status in dashboard?
-2. **Index Exists**: Check `http://localhost:9200/_cat/indices`
-3. **Data Present**: Query document count
-4. **Kibana Index Pattern**: Configured correctly?
-
-#### AI Analysis Failing
+#### Classification Issues
 ```bash
-# Check Ollama status
-curl http://localhost:11437/api/tags
+# Check AI model status
+curl "http://localhost:11435/api/tags"
 
-# Verify model available
-docker-compose exec ollama ollama list
+# View classification logs
+docker-compose logs node-red | grep "Classification"
 
-# Check model size vs available memory
+# Manually classify an email to test
+curl -X POST "http://localhost:1880/api/email/classify" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subject": "Test Subject",
+    "body": "Test Body"
+  }'
+```
+
+#### Performance Problems
+```bash
+# Check system resources
 docker stats
+
+# View processing times
+curl "http://localhost:1880/api/email/stats"
+
+# Restart services if needed
+docker-compose restart node-red ollama
 ```
 
-### Error Codes
+### Logs & Diagnostics
 
-| Code | Description | Solution |
-|------|-------------|----------|
-| `TIKA_TIMEOUT` | Document parsing timeout | Reduce file size or increase timeout |
-| `LLM_UNAVAILABLE` | AI service not responding | Check Ollama service status |
-| `INDEX_FULL` | Elasticsearch storage full | Clean old indices or add storage |
-| `AUTH_FAILED` | MinIO access denied | Check credentials in .env |
-
-### Log Analysis
-
-#### Node-RED Logs
+**Viewing Logs**:
 ```bash
-# View processing logs
-docker-compose logs node-red | grep "Processing document"
+# All services
+docker-compose logs
 
-# Error logs
-docker-compose logs node-red | grep "ERROR"
+# Specific service
+docker-compose logs node-red
+
+# Follow logs in real-time
+docker-compose logs -f
+
+# Filter logs
+docker-compose logs | grep "error"
 ```
 
-#### Elasticsearch Logs
-```bash
-# Index operations
-docker-compose logs elasticsearch | grep "index"
-
-# Memory issues
-docker-compose logs elasticsearch | grep "OutOfMemory"
-```
-
-### Performance Optimization
-
-#### Memory Usage
-```bash
-# Monitor container memory
-docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
-
-# Adjust Java heap (in .env)
-ES_JAVA_OPTS=-Xms1g -Xmx2g
-```
-
-#### Processing Speed
-- **Batch Processing**: Group small files together
-- **Model Selection**: Use smaller AI models for simple tasks
-- **Parallel Processing**: Enable multiple Node-RED flows
-
----
-
-## 📞 Support & Resources
+**Diagnostic Tools**:
+1. **Health Check**: `curl http://localhost:1880/api/system/status`
+2. **Email Queue**: `curl http://localhost:1880/api/email/queue`
+3. **Service Metrics**: `curl http://localhost:9090/api/v1/query?query=up`
 
 ### Getting Help
 
-1. **System Dashboard**: Check service status first
-2. **Log Files**: Review error messages
-3. **Documentation**: Refer to specific service docs
-4. **Community**: Node-RED, Elasticsearch communities
+If you encounter issues not covered here:
 
-### Configuration Files
+1. **Check Documentation**: Review CONFIG.md and INSTALL.md
+2. **System Logs**: Examine detailed logs for errors
+3. **Support Channels**: Contact your system administrator
 
-- **Main Config**: `.env` file
-- **Service Configs**: `config/` directory  
-- **Templates**: `templates/` directory
-- **Logs**: `docker-compose logs [service]`
+---
 
-### Useful Commands
+## 🔒 Security & Privacy
 
+### Email Security
+
+**Best Practices**:
+- Use OAuth2 for email authentication when possible
+- Enable TLS/SSL for email connections
+- Regularly rotate email credentials
+- Limit access to sensitive emails
+
+**Configuration**:
 ```bash
-# System status
-docker-compose ps
+# In .env file
+EMAIL_SECURE=true
+EMAIL_AUTH_TYPE=oauth2
+EMAIL_OAUTH_CLIENT_ID=your-client-id
+EMAIL_OAUTH_CLIENT_SECRET=your-client-secret
+```
 
-# Full restart
-docker-compose down && docker-compose up -d
+### Data Retention
 
-# Update dashboard
-python docs/generate-dashboard.py --serve
+**Default Policy**:
+- Processed emails stored for 90 days
+- Attachments stored for 30 days
+- Logs retained for 14 days
 
-# Backup data
-tar -czf backup-$(date +%Y%m%d).tar.gz data/
-
-# Clean old data
-docker system prune -f
+**Custom Configuration**:
+```bash
+# In .env file
+EMAIL_RETENTION_DAYS=90
+ATTACHMENT_RETENTION_DAYS=30
+LOG_RETENTION_DAYS=14
 ```
 
 ---
 
-*This guide covers the essential functionality of DocPro. For advanced features and API documentation, see the Administrator Guide and Developer Documentation.*
+## 📱 Mobile Access
+
+### Mobile Dashboard
+
+The HubMail dashboard is responsive and can be accessed from mobile devices:
+
+1. Open your mobile browser
+2. Navigate to your server address and port
+3. Login with your credentials
+
+**Mobile Features**:
+- View email statistics
+- Receive notifications
+- Check system status
+- Process urgent emails
+
+---
+
+## 🔄 Updates & Maintenance
+
+### Updating HubMail
+
+```bash
+# Pull latest changes
+git pull
+
+# Update containers
+docker-compose pull
+
+# Restart services
+docker-compose down
+docker-compose up -d
+```
+
+### Backup & Restore
+
+**Backup Data**:
+```bash
+# Backup configuration
+cp .env .env.backup
+
+# Backup Node-RED flows
+curl "http://localhost:1880/flows" > flows-backup.json
+
+# Backup Redis data
+docker-compose exec redis redis-cli SAVE
+```
+
+**Restore Data**:
+```bash
+# Restore configuration
+cp .env.backup .env
+
+# Restore Node-RED flows
+curl -X POST "http://localhost:1880/flows" \
+  -H "Content-Type: application/json" \
+  -d @flows-backup.json
+
+# Restart system
+docker-compose restart
+```
+
+---
+
+**🎉 You're now ready to use HubMail for efficient email processing!**

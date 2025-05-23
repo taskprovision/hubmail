@@ -1,12 +1,12 @@
-# DocPro - Configuration Reference
+# HubMail - Configuration Reference
 
 ## Environment Variables (.env)
 
 ### Network & Project Settings
 ```bash
 # Project identification
-COMPOSE_PROJECT_NAME=docpro
-NETWORK_NAME=doc-net
+COMPOSE_PROJECT_NAME=hubmail
+NETWORK_NAME=hub-net
 
 # Docker network settings
 DOCKER_NETWORK_SUBNET=172.20.0.0/16
@@ -16,105 +16,62 @@ DOCKER_NETWORK_GATEWAY=172.20.0.1
 ### Service Ports
 ```bash
 # Core services
-ELASTICSEARCH_HTTP_PORT=9200
-KIBANA_PORT=5601
-NODE_RED_PORT=1880
-
-# Storage & processing
-MINIO_API_PORT=9000
-MINIO_CONSOLE_PORT=9001
-TIKA_PORT=9998
-OCR_PORT=8082
+NODERED_PORT=1880
+PROMETHEUS_PORT=9090
+GRAFANA_PORT=3000
 
 # AI & cache
-OLLAMA_PORT=11437
-REDIS_PORT=6378
+OLLAMA_PORT=11435
+REDIS_PORT=6379
 ```
 
-### Elasticsearch Configuration
+### Email Server Configuration
 ```bash
-# Basic settings
-ELASTICSEARCH_HOST=elasticsearch
-ELASTICSEARCH_PORT=9200
-ELASTICSEARCH_DISCOVERY_TYPE=single-node
+# Email server settings
+EMAIL_SERVER=imap.gmail.com
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+EMAIL_PORT=993
+EMAIL_SSL=true
 
-# Memory settings
-ES_JAVA_OPTS=-Xms512m -Xmx512m
+# Email processing
+EMAIL_CHECK_INTERVAL=60
+EMAIL_MAX_MESSAGES=100
+EMAIL_FOLDER=INBOX
+EMAIL_PROCESSED_FOLDER=Processed
+EMAIL_ERROR_FOLDER=Error
+
+# Filters
+EMAIL_SUBJECT_FILTER=
+EMAIL_FROM_FILTER=
+EMAIL_TO_FILTER=
+```
+
+### Node-RED Configuration
+```bash
+# Server settings
+NODERED_TZ=Europe/Warsaw
+NODERED_ENABLE_PROJECTS=true
+NODERED_UI_HOST=0.0.0.0
+NODERED_UI_PORT=1880
+NODERED_CREDENTIAL_SECRET=your-secret-key-here
 
 # Security
-XPACK_SECURITY_ENABLED=false
-ELASTICSEARCH_USERNAME=elastic
-ELASTICSEARCH_PASSWORD=changeme
+NODERED_ADMIN_AUTH=true
+NODERED_ADMIN_USER=admin
+NODERED_ADMIN_PASSWORD=admin123
 
-# Indices
-ES_INDEX_DOCUMENTS=documents
-ES_INDEX_ALERTS=compliance-alerts
-
-# Performance
-ELASTICSEARCH_REFRESH_INTERVAL=5s
-ELASTICSEARCH_NUMBER_OF_SHARDS=1
-ELASTICSEARCH_NUMBER_OF_REPLICAS=0
-```
-
-### Kibana Configuration
-```bash
-# Connection
-KIBANA_ELASTICSEARCH_HOST=http://elasticsearch:9200
-KIBANA_SERVER_NAME=kibana
-KIBANA_SERVER_HOST=0.0.0.0
-
-# Security
-KIBANA_ELASTICSEARCH_USERNAME=elastic
-KIBANA_ELASTICSEARCH_PASSWORD=changeme
-
-# SSL (if enabled)
-KIBANA_SERVER_SSL_ENABLED=false
-KIBANA_SERVER_SSL_CERTIFICATE=/certs/kibana.crt
-KIBANA_SERVER_SSL_KEY=/certs/kibana.key
-```
-
-### MinIO Storage Configuration
-```bash
-# Authentication
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin123
-
-# Buckets
-MINIO_BUCKET=documents
-MINIO_DEFAULT_BUCKET=documents
-MINIO_PROCESSED_BUCKET=processed
-MINIO_TEMPLATES_BUCKET=templates
-
-# Regional settings
-MINIO_REGION=us-east-1
-
-# Performance
-MINIO_CACHE_DRIVES=/tmp/minio-cache
-MINIO_CACHE_EXCLUDE="*.tmp"
-```
-
-### Document Processing Settings
-```bash
-# File handling
-MAX_DOCUMENT_SIZE=50MB
-SUPPORTED_FORMATS=pdf,docx,png,jpg,jpeg,tiff,txt,rtf,odt
-PROCESSING_THREADS=4
-
-# Timeouts
-TIKA_TIMEOUT_MS=30000
-OCR_TIMEOUT_MS=60000
-LLM_TIMEOUT_MS=120000
-
-# Processing options
-AUTO_PROCESSING=true
-BATCH_PROCESSING=false
-PARALLEL_PROCESSING=true
+# Features
+NODERED_ENABLE_TOURS=false
+NODERED_ENABLE_SAFE_MODE=false
 ```
 
 ### AI & LLM Configuration
 ```bash
 # Model settings
 OLLAMA_HOST=ollama
+OLLAMA_CONTAINER_PORT=11434
+OLLAMA_ORIGINS=*
 LLM_MODEL=llama2:13b
 LLM_TEMPERATURE=0.1
 LLM_TOP_P=0.9
@@ -131,38 +88,6 @@ LLM_MODEL_CACHE_DIR=/models
 LLM_MAX_CONTEXT_LENGTH=4096
 ```
 
-### OCR Configuration
-```bash
-# OCR service
-OCR_SERVICE_URL=http://ocr:8080
-OCR_LANGUAGE=eng+pol
-OCR_DPI=300
-OCR_PREPROCESSING=true
-
-# Tesseract settings
-TESSERACT_PSM=6
-TESSERACT_OEM=3
-TESSERACT_WHITELIST="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,!?-"
-```
-
-### Node-RED Configuration
-```bash
-# Server settings
-NODE_RED_UI_HOST=0.0.0.0
-NODE_RED_UI_PORT=1880
-NODE_RED_CREDENTIAL_SECRET=your-secret-key-here
-
-# Security
-NODE_RED_ADMIN_AUTH=true
-NODE_RED_ADMIN_USER=admin
-NODE_RED_ADMIN_PASSWORD=admin123
-
-# Features
-NODE_RED_ENABLE_PROJECTS=true
-NODE_RED_ENABLE_TOURS=false
-NODE_RED_ENABLE_SAFE_MODE=false
-```
-
 ### Redis Configuration
 ```bash
 # Connection
@@ -177,18 +102,79 @@ REDIS_MAXMEMORY_POLICY=allkeys-lru
 REDIS_SAVE_FREQUENCY=900 1
 ```
 
+### Prometheus Configuration
+```bash
+# Basic settings
+PROMETHEUS_RETENTION=30d
+PROMETHEUS_STORAGE_PATH=/prometheus
+PROMETHEUS_CONFIG_PATH=/etc/prometheus
+
+# Scrape intervals
+PROMETHEUS_SCRAPE_INTERVAL=15s
+PROMETHEUS_EVALUATION_INTERVAL=15s
+
+# Targets
+PROMETHEUS_TARGETS=node-red:1880,ollama:11434,redis:6379
+```
+
+### Grafana Configuration
+```bash
+# Authentication
+GRAFANA_ADMIN_PASSWORD=admin
+GRAFANA_ALLOW_SIGN_UP=false
+
+# Features
+GRAFANA_PLUGINS=grafana-piechart-panel
+GRAFANA_DASHBOARDS_PATH=/etc/grafana/provisioning/dashboards
+GRAFANA_DATASOURCES_PATH=/etc/grafana/provisioning/datasources
+
+# UI settings
+GRAFANA_DEFAULT_THEME=dark
+GRAFANA_HOME_DASHBOARD=email-metrics
+```
+
+### Email Classification Settings
+```bash
+# Classification categories
+EMAIL_CATEGORIES=URGENT,BUSINESS,PERSONAL,SPAM
+
+# Classification rules
+URGENT_KEYWORDS=urgent,asap,immediately,emergency
+BUSINESS_KEYWORDS=invoice,contract,meeting,proposal
+PERSONAL_KEYWORDS=family,personal,private,holiday
+SPAM_KEYWORDS=offer,discount,sale,limited time
+
+# Processing options
+AUTO_CLASSIFICATION=true
+AUTO_REPLY=true
+AUTO_ROUTING=true
+```
+
+### Auto-Reply Templates
+```bash
+# Template settings
+TEMPLATE_URGENT=templates/urgent-reply.txt
+TEMPLATE_BUSINESS=templates/business-reply.txt
+TEMPLATE_PERSONAL=templates/personal-reply.txt
+TEMPLATE_OUT_OF_OFFICE=templates/out-of-office.txt
+
+# Signature
+EMAIL_SIGNATURE=templates/signature.html
+EMAIL_REPLY_FROM=your-email@gmail.com
+EMAIL_REPLY_NAME=HubMail Auto-Reply
+```
+
 ### Monitoring & Logging
 ```bash
 # Log levels
 LOG_LEVEL=INFO
-ELASTICSEARCH_LOG_LEVEL=WARN
-KIBANA_LOG_LEVEL=INFO
-NODE_RED_LOG_LEVEL=INFO
+NODERED_LOG_LEVEL=INFO
+OLLAMA_LOG_LEVEL=INFO
+REDIS_LOG_LEVEL=WARN
 
 # Metrics
 METRICS_ENABLED=true
-PROMETHEUS_PORT=9090
-GRAFANA_PORT=3000
+METRICS_RETENTION_DAYS=30
 
 # Health checks
 HEALTH_CHECK_INTERVAL=30s
@@ -199,273 +185,176 @@ HEALTH_CHECK_RETRIES=3
 ### Notification Settings
 ```bash
 # Email notifications
-EMAIL_ENABLED=false
-EMAIL_SMTP_HOST=smtp.gmail.com
-EMAIL_SMTP_PORT=587
-EMAIL_SMTP_USER=your-email@gmail.com
-EMAIL_SMTP_PASSWORD=your-app-password
-EMAIL_FROM=docpro@company.com
-EMAIL_TO_ADMIN=admin@company.com
+NOTIFICATION_EMAIL=admin@example.com
+NOTIFICATION_LEVEL=ERROR
+NOTIFICATION_INTERVAL=3600
 
-# Slack integration
-SLACK_ENABLED=false
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
-SLACK_CHANNEL=#document-alerts
-SLACK_USERNAME=DocPro Bot
-
-# Microsoft Teams
-TEAMS_ENABLED=false
-TEAMS_WEBHOOK_URL=https://outlook.office.com/webhook/YOUR/TEAMS/WEBHOOK
+# Webhook notifications
+WEBHOOK_URL=https://hooks.slack.com/services/your-webhook-url
+WEBHOOK_ENABLED=false
+WEBHOOK_FORMAT=json
 ```
 
-### Compliance & Business Rules
+### Volume Paths
 ```bash
-# Compliance monitoring
-COMPLIANCE_ENABLED=true
-COMPLIANCE_STRICT_MODE=false
+# Data storage
+VOLUME_NODE_RED=./data/node-red
+VOLUME_OLLAMA=./data/ollama
+VOLUME_PROMETHEUS=./data/prometheus
+VOLUME_GRAFANA=./data/grafana
+VOLUME_REDIS=./data/redis
 
-# Business thresholds
-INVOICE_AMOUNT_THRESHOLD=10000
-CONTRACT_RISK_ALERT=true
-COR_VALIDITY_CHECK=true
-COR_EXPIRY_WARNING_DAYS=30
-
-# Workflow settings
-AUTO_APPROVAL_LIMIT=1000
-MANUAL_REVIEW_THRESHOLD=50000
-ESCALATION_TIMEOUT_HOURS=24
+# Configuration
+CONFIG_NODE_RED=./config/node-red
+CONFIG_PROMETHEUS=./config/prometheus
+CONFIG_GRAFANA=./config/grafana
 ```
 
-### Security Settings
-```bash
-# Authentication
-AUTH_ENABLED=false
-JWT_SECRET=your-jwt-secret-key-here
-SESSION_TIMEOUT=3600
-API_RATE_LIMIT=100
-
-# SSL/TLS
-SSL_ENABLED=false
-SSL_CERT_PATH=/certs/server.crt
-SSL_KEY_PATH=/certs/server.key
-SSL_CA_PATH=/certs/ca.crt
-
-# CORS
-CORS_ENABLED=true
-CORS_ORIGINS=http://localhost:*,https://localhost:*
-CORS_METHODS=GET,POST,PUT,DELETE
-```
-
-### Backup & Retention
+### Backup Settings
 ```bash
 # Backup settings
 BACKUP_ENABLED=true
 BACKUP_SCHEDULE="0 2 * * *"
 BACKUP_RETENTION_DAYS=30
-BACKUP_DESTINATION=/backups
-
-# Data retention
-DOCUMENT_RETENTION_DAYS=365
-LOG_RETENTION_DAYS=90
-METRICS_RETENTION_DAYS=30
-ELASTICSEARCH_INDEX_RETENTION=90d
+BACKUP_PATH=./backups
+BACKUP_INCLUDE_DATA=true
+BACKUP_INCLUDE_CONFIG=true
+BACKUP_COMPRESS=true
 ```
 
-### Performance Tuning
+### Security Settings
 ```bash
-# General performance
-WORKER_PROCESSES=4
-MAX_CONNECTIONS=1000
-KEEPALIVE_TIMEOUT=65
+# Docker security
+DOCKER_UID=1000
+DOCKER_GID=1000
+DOCKER_RESTART_POLICY=unless-stopped
 
-# Elasticsearch performance
-ES_REFRESH_INTERVAL=5s
-ES_FLUSH_THRESHOLD_SIZE=512mb
-ES_MERGE_POLICY_MAX_MERGE_AT_ONCE=10
-
-# Processing performance
-BULK_SIZE=100
-BULK_FLUSH_INTERVAL=5s
-PROCESSING_QUEUE_SIZE=1000
-```
-
-### Development Settings
-```bash
-# Development mode
-DEVELOPMENT_MODE=false
-DEBUG_ENABLED=false
-VERBOSE_LOGGING=false
-
-# Testing
-TEST_MODE=false
-MOCK_SERVICES=false
-DISABLE_AUTH=false
-
-# Hot reload
-HOT_RELOAD=false
-WATCH_FILES=false
+# Network security
+EXPOSE_PORTS_EXTERNALLY=true
+USE_HTTPS=false
+SSL_CERT_PATH=./certs/server.crt
+SSL_KEY_PATH=./certs/server.key
 ```
 
 ## Configuration Files
 
-### docker-compose.yml Override
+### Node-RED Flow Configuration
+Location: `config/node-red/flows.json`
+
+This file contains all the Node-RED flows for email processing:
+- Email retrieval flow
+- Classification flow
+- Auto-reply flow
+- Routing flow
+- Metrics collection flow
+
+### Prometheus Configuration
+Location: `config/prometheus/prometheus.yml`
+
+Example configuration:
 ```yaml
-# docker-compose.override.yml
-version: '3.8'
-services:
-  elasticsearch:
-    environment:
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-    volumes:
-      - /custom/path:/usr/share/elasticsearch/data
-  
-  node-red:
-    volumes:
-      - ./custom-flows:/data/flows
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'node-red'
+    static_configs:
+      - targets: ['node-red:1880']
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
 ```
 
-### Node-RED Settings
+### Grafana Dashboards
+Location: `config/grafana/dashboards/email-metrics.json`
+
+This dashboard includes:
+- Email volume metrics
+- Classification distribution
+- Processing time statistics
+- Error rate monitoring
+- System resource usage
+
+### Email Templates
+Location: `config/templates/`
+
+Templates for auto-replies based on email classification:
+- `urgent-reply.txt`: For urgent emails
+- `business-reply.txt`: For business emails
+- `personal-reply.txt`: For personal emails
+- `out-of-office.txt`: For out-of-office periods
+- `signature.html`: Email signature template
+
+## Advanced Configuration
+
+### Custom Classification Logic
+You can modify the classification logic in Node-RED by editing the function node:
+
 ```javascript
-// config/node-red/settings.js
-module.exports = {
-    uiPort: process.env.NODE_RED_PORT || 1880,
-    httpAdminRoot: '/admin',
-    httpNodeRoot: '/api',
-    userDir: '/data',
-    
-    adminAuth: {
-        type: "credentials",
-        users: [{
-            username: process.env.NODE_RED_ADMIN_USER,
-            password: process.env.NODE_RED_ADMIN_PASSWORD_HASH,
-            permissions: "*"
-        }]
-    },
-    
-    functionGlobalContext: {
-        elasticsearch: require('elasticsearch'),
-        moment: require('moment'),
-        _: require('lodash')
-    }
+// Example classification function
+function classifyEmail(email) {
+  const subject = email.subject.toLowerCase();
+  const body = email.body.toLowerCase();
+  const from = email.from.toLowerCase();
+  
+  // Check for urgent patterns
+  if (subject.includes('urgent') || subject.includes('asap')) {
+    return 'URGENT';
+  }
+  
+  // Check for business patterns
+  if (subject.includes('invoice') || subject.includes('meeting')) {
+    return 'BUSINESS';
+  }
+  
+  // Default to AI classification
+  return classifyWithAI(email);
 }
 ```
 
-### Elasticsearch Configuration
+### Custom Prompts for AI Classification
+Edit the AI prompt template in `config/node-red/settings.js`:
+
+```javascript
+module.exports = {
+  // ... other settings
+  functionGlobalContext: {
+    classificationPrompt: `
+      Analyze this email and classify it as one of the following:
+      - URGENT: Time-sensitive matters requiring immediate attention
+      - BUSINESS: Work-related but not urgent
+      - PERSONAL: Non-work related personal communications
+      - SPAM: Unwanted or marketing emails
+      
+      Email:
+      Subject: {{subject}}
+      From: {{from}}
+      Body: {{body}}
+      
+      Classification:
+    `
+  }
+}
+```
+
+### Performance Tuning
+Adjust resource limits in `docker-compose.yml`:
+
 ```yaml
-# config/elasticsearch/elasticsearch.yml
-cluster.name: ${COMPOSE_PROJECT_NAME}-cluster
-node.name: es-node-1
-
-path.data: /usr/share/elasticsearch/data
-path.logs: /usr/share/elasticsearch/logs
-
-network.host: 0.0.0.0
-http.port: 9200
-
-discovery.type: single-node
-
-xpack.security.enabled: ${XPACK_SECURITY_ENABLED}
-xpack.monitoring.collection.enabled: false
+services:
+  node-red:
+    # ...
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+  ollama:
+    # ...
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
 ```
-
-### Kibana Configuration
-```yaml
-# config/kibana/kibana.yml
-server.name: ${KIBANA_SERVER_NAME}
-server.host: ${KIBANA_SERVER_HOST}
-server.port: ${KIBANA_PORT}
-
-elasticsearch.hosts: [${KIBANA_ELASTICSEARCH_HOST}]
-elasticsearch.requestTimeout: 90000
-
-xpack.security.enabled: ${XPACK_SECURITY_ENABLED}
-```
-
-## Environment-Specific Configurations
-
-### Development Environment
-```bash
-# .env.development
-LOG_LEVEL=DEBUG
-DEVELOPMENT_MODE=true
-HOT_RELOAD=true
-ES_JAVA_OPTS=-Xms512m -Xmx512m
-LLM_MODEL=llama2:7b
-PROCESSING_THREADS=2
-METRICS_ENABLED=false
-```
-
-### Production Environment
-```bash
-# .env.production
-LOG_LEVEL=WARN
-DEVELOPMENT_MODE=false
-ES_JAVA_OPTS=-Xms4g -Xmx4g
-LLM_MODEL=llama2:13b
-PROCESSING_THREADS=8
-BACKUP_ENABLED=true
-SSL_ENABLED=true
-AUTH_ENABLED=true
-```
-
-### Testing Environment
-```bash
-# .env.testing
-LOG_LEVEL=INFO
-TEST_MODE=true
-ELASTICSEARCH_HTTP_PORT=9201
-KIBANA_PORT=5602
-NODE_RED_PORT=1881
-MOCK_SERVICES=true
-```
-
-## Validation & Best Practices
-
-### Configuration Validation
-```bash
-# Validate .env file
-python3 scripts/validate-config.py
-
-# Check port conflicts
-netstat -tulpn | grep -E "(9200|5601|1880|9001)"
-
-# Validate Docker compose
-docker-compose config
-```
-
-### Security Best Practices
-```bash
-# Strong passwords
-MINIO_ROOT_PASSWORD=$(openssl rand -base64 32)
-NODE_RED_CREDENTIAL_SECRET=$(openssl rand -hex 32)
-JWT_SECRET=$(openssl rand -hex 64)
-
-# Restrict network access
-ELASTICSEARCH_HOST=127.0.0.1
-KIBANA_HOST=127.0.0.1
-
-# Enable authentication
-AUTH_ENABLED=true
-XPACK_SECURITY_ENABLED=true
-```
-
-### Performance Best Practices
-```bash
-# Memory allocation (total system memory / 2)
-ES_JAVA_OPTS=-Xms4g -Xmx4g
-
-# SSD storage for Elasticsearch
-# Map data directory to SSD
-./data/elasticsearch -> /mnt/ssd/elasticsearch
-
-# CPU allocation
-PROCESSING_THREADS=$(nproc)
-```
-
----
-
-**Configuration Templates Available:**
-- `.env.development` - Development settings
-- `.env.production` - Production settings  
-- `.env.testing` - Testing environment
-- `docker-compose.override.yml` - Custom overrides
