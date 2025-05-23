@@ -1,4 +1,4 @@
-.PHONY: help install dev stop restart restart-config status logs app-logs config-logs debug-config ui config-ui dashboard all-ui python-deps update-env clean test backup restore check-api
+.PHONY: help install dev stop restart restart-config status logs app-logs config-logs debug-config ui config-ui dashboard all-ui python-deps update-env clean test python-tests python-docs generate-workflow-diagram backup restore check-api
 
 ## Show this help
 help:
@@ -22,6 +22,9 @@ help:
 	@echo '  update-env   Update .env file with new variables from .env.example'
 	@echo '  clean        Clean up all containers, networks, and volumes'
 	@echo '  test         Run tests'
+	@echo '  python-tests Run Python app tests'
+	@echo '  python-docs  Generate Python app documentation'
+	@echo '  generate-workflow-diagram Generate visual workflow diagrams'
 	@echo '  check-api    Check the API health status'
 	@echo '  backup       Create a backup of the current state'
 	@echo '  restore      Restore from the latest backup'
@@ -147,6 +150,36 @@ clean:
 test:
 	@echo -e "Running tests..."
 	./scripts/test-flow.sh
+
+## Run Python app tests
+python-tests:
+	@echo -e "Running Python app tests..."
+	cd python_app && python -m tests.run_tests
+
+## Generate Python app documentation
+python-docs:
+	@echo -e "Generating Python app documentation..."
+	@echo -e "Documentation available at python_app/docs/README.md"
+	@if [ ! -d python_app/docs ]; then \
+		mkdir -p python_app/docs; \
+	fi
+
+## Generate visual workflow diagrams
+generate-workflow-diagram:
+	@echo -e "Generating workflow diagrams..."
+	@if ! pip list | grep -q graphviz; then \
+		echo -e "Installing graphviz Python package..."; \
+		pip install graphviz; \
+	fi
+	@if ! command -v dot >/dev/null 2>&1; then \
+		echo -e "Graphviz not found. Please install it:"; \
+		echo -e "  Ubuntu/Debian: sudo apt-get install graphviz"; \
+		echo -e "  CentOS/RHEL: sudo yum install graphviz"; \
+		echo -e "  macOS: brew install graphviz"; \
+		exit 1; \
+	fi
+	cd python_app && python docs/workflow_diagram.py
+	@echo -e "Workflow diagrams generated in python_app/docs/"
 
 ## Create a backup
 backup:
