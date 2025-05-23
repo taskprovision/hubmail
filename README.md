@@ -2,6 +2,15 @@
 
 Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitoringu w czasie rzeczywistym.
 
+## 📑 Dokumentacja
+
+- [📖 Instrukcja instalacji](docs/INSTALL.md)
+- [⚙️ Konfiguracja systemu](docs/CONFIG.md)
+- [🚀 Szybki start](docs/START.md)
+- [📝 Dokumentacja API](docs/API.md)
+- [👤 Przewodnik użytkownika](docs/user-guide.md)
+- [👨‍💻 Przewodnik administratora](docs/admin-guide.md)
+
 ## ✨ Funkcje
 
 - 🤖 **AI Classification**: Automatyczna klasyfikacja emaili (URGENT/BUSINESS/SPAM/PERSONAL)
@@ -40,6 +49,7 @@ Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitori
 | **Node-RED** | http://localhost:1880 | - |
 | **Grafana** | http://localhost:3000 | admin/admin |
 | **Prometheus** | http://localhost:9090 | - |
+| **Ollama** | http://localhost:11436 | - |
 
 ## ⚙️ Konfiguracja
 
@@ -53,11 +63,14 @@ EMAIL_SERVER=imap.gmail.com
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 EMAIL_PORT=993
-EMAIL_SSL=true
+EMAIL_USE_SSL=true
 
 # Inne ustawienia
-LOG_LEVEL=info
+LLM_MODEL=llama2:7b
+LLM_TEMPERATURE=0.3
 ```
+
+Więcej szczegółów znajdziesz w [dokumentacji konfiguracji](docs/CONFIG.md).
 
 ## 📁 Architektura Systemu
 
@@ -99,4 +112,20 @@ Każdy email przechodzi przez następujący proces:
 
 Ten projekt jest dostępny na licencji Apache. Więcej informacji w pliku [LICENSE](LICENSE).
 
+## 🔗 Struktura projektu
 
+```
+hubmail/
+├── config/                # Pliki konfiguracyjne dla usług
+│   ├── grafana/           # Konfiguracja Grafana
+│   ├── node-red/          # Konfiguracja Node-RED
+│   ├── ollama/            # Konfiguracja Ollama
+│   └── prometheus/        # Konfiguracja Prometheus
+├── docs/                  # Dokumentacja
+├── scripts/               # Skrypty pomocnicze
+│   ├── backup.sh          # Skrypt do tworzenia kopii zapasowej
+│   ├── setup.sh           # Skrypt konfiguracyjny
+│   └── test-flow.sh       # Skrypt testowy
+├── .env.example           # Przykładowy plik zmiennych środowiskowych
+├── docker-compose.yml     # Konfiguracja Docker Compose
+└── install.sh             # Skrypt instalacyjny
