@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   node-red:
     image: nodered/node-red:latest
@@ -21,9 +19,9 @@ services:
     container_name: email-ollama
     restart: unless-stopped
     ports:
-      - "11434:11434"
+      - "11435:11434"  # Changed port to avoid conflict
     volumes:
-      - ./data/ollama:/root/.ollama
+      - ollama-storage:/root/.ollama
     environment:
       - OLLAMA_ORIGINS=*
     networks:
@@ -33,15 +31,19 @@ services:
     image: prom/prometheus:latest
     container_name: email-prometheus
     restart: unless-stopped
+    user: "${UID}:${GID:-1000}"
     ports:
       - "9090:9090"
     volumes:
       - ./config/prometheus:/etc/prometheus
-      - ./data/prometheus:/prometheus
+      - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
     networks:
       - email-net
 
@@ -49,16 +51,22 @@ services:
     image: grafana/grafana:latest
     container_name: email-grafana
     restart: unless-stopped
+    user: "${UID}:${GID:-1000}"
     ports:
       - "3000:3000"
     volumes:
-      - ./data/grafana:/var/lib/grafana
+      - grafana-storage:/var/lib/grafana
       - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
       - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_PATHS_CONFIG=/etc/grafana/grafana.ini
+      - GF_PATHS_DATA=/var/lib/grafana
+      - GF_PATHS_LOGS=/var/log/grafana
+      - GF_PATHS_PLUGINS=/var/lib/grafana/plugins
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     networks:
       - email-net
 
@@ -69,7 +77,8 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./data/redis:/data
+      - redis-data:/data
+    command: redis-server --appendonly yes
     networks:
       - email-net
 
@@ -78,8 +87,13 @@ networks:
     driver: bridge
 
 volumes:
-  node-red-data:
-  ollama-data:
+  node-red-storage:
+    driver: local
+  ollama-storage:
+    driver: local
   prometheus-data:
-  grafana-data:
+    driver: local
+  grafana-storage:
+    driver: local
   redis-data:
+    driver: local

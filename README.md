@@ -1,56 +1,102 @@
-# hubmail - Email Intelligence Hub 
+# HubMail - Email Intelligence Hub 
 
 Automatyczne przetwarzanie i klasyfikacja emaili z wykorzystaniem LLM i monitoringu w czasie rzeczywistym.
 
-## Funkcje
+## ✨ Funkcje
 
 - 🤖 **AI Classification**: Automatyczna klasyfikacja emaili (URGENT/BUSINESS/SPAM/PERSONAL)
 - 📊 **Real-time Monitoring**: Dashboard z metrykami w Grafana
 - 🔄 **Process Automation**: Automatyczne odpowiedzi i routing emaili
 - 📈 **Analytics**: Szczegółowe analizy wzorców emailowych
 
-## Szybki Start
+## 🚀 Szybki Start
 
-1. Sklonuj repozytorium i przejdź do katalogu
-2. Skopiuj i edytuj konfigurację: `cp .env.example .env`
-3. Uruchom instalację: `./install.sh`
-4. Przetestuj system: `./scripts/test-flow.sh`
+1. Sklonuj repozytorium i przejdź do katalogu:
+   ```bash
+   git clone https://github.com/your-username/hubmail.git
+   cd hubmail
+   ```
 
-## Dostęp do Serwisów
+2. Skonfiguruj zmienne środowiskowe:
+   ```bash
+   cp .env.example .env
+   # Edytuj plik .env i ustaw odpowiednie wartości
+   ```
 
-- **Node-RED**: http://localhost:1880 - Zarządzanie workflow
-- **Grafana**: http://localhost:3000 (admin/admin) - Monitoring i dashboardy  
-- **Prometheus**: http://localhost:9090 - Metryki i alerty
+3. Uruchom instalację:
+   ```bash
+   ./install.sh
+   ```
 
-## Konfiguracja Email
+4. Przetestuj system:
+   ```bash
+   ./scripts/test-flow.sh
+   ```
 
-Edytuj plik `.env` i dodaj swoje dane:
+## 🌐 Dostęp do Serwisów
+
+| Usługa | URL | Domyślne dane logowania |
+|--------|-----|-------------------------|
+| **Node-RED** | http://localhost:1880 | - |
+| **Grafana** | http://localhost:3000 | admin/admin |
+| **Prometheus** | http://localhost:9090 | - |
+
+## ⚙️ Konfiguracja
+
+### Konfiguracja Email
+
+Edytuj plik `.env` i zaktualizuj poniższe zmienne:
 
 ```bash
+# Konfiguracja serwera pocztowego
 EMAIL_SERVER=imap.gmail.com
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
+EMAIL_PORT=993
+EMAIL_SSL=true
 
-## Struktura Plików
-
-## Struktura Projektów
-
-Każdy email przechodzi przez:
-1. **Pobranie** z serwera IMAP
-2. **Analiza** przez LLM (klasyfikacja + wyciągnięcie intencji)
-3. **Routing** na podstawie klasyfikacji
-4. **Akcja** (alert, auto-reply, archiwizacja)
-5. **Monitoring** (metryki, logi, dashboard)
-
-## Backup
-
-Utwórz backup: `./scripts/backup.sh`
-
-## Troubleshooting
-
-- Sprawdź logi: `docker-compose logs -f`
-- Restart serwisów: `docker-compose restart`
-- Pełna reinstalacja: `docker-compose down -v && ./install.sh`
+# Inne ustawienia
+LOG_LEVEL=info
 ```
+
+## 📁 Architektura Systemu
+
+Każdy email przechodzi przez następujący proces:
+
+1. **Pobranie** - Pobieranie wiadomości z serwera IMAP
+2. **Analiza** - Przetwarzanie przez model LLM (klasyfikacja + wyciągnięcie intencji)
+3. **Routing** - Kierowanie wiadomości na podstawie klasyfikacji
+4. **Akcja** - Wykonanie odpowiedniej akcji (alert, auto-odpowiedź, archiwizacja)
+5. **Monitoring** - Zbieranie metryk i wyświetlanie ich w panelu
+
+## 🔄 Zarządzanie
+
+### Tworzenie kopii zapasowej
+
+```bash
+./scripts/backup.sh
+```
+
+### Najczęstsze problemy
+
+- **Sprawdzanie logów**:
+  ```bash
+  docker-compose logs -f
+  ```
+
+- **Restart usług**:
+  ```bash
+  docker-compose restart
+  ```
+
+- **Pełna reinstalacja** (ostrożnie - usuwa dane):
+  ```bash
+  docker-compose down -v
+  ./install.sh
+  ```
+
+## 📝 Licencja
+
+Ten projekt jest dostępny na licencji MIT. Więcej informacji w pliku [LICENSE](LICENSE).
 
 
