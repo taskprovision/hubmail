@@ -1,0 +1,24 @@
+{
+    "enabled": false,
+    "email": {
+        "enabled": false,
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 587,
+        "username": "",
+        "password": "",
+        "from_email": "",
+        "recipients": []
+    },
+    "slack": {
+        "enabled": false,
+        "webhook_url": "",
+        "channel": "#flow-notifications",
+        "username": "FlowDSL Bot"
+    },
+    "notification_rules": {
+        "on_start": true,
+        "on_complete": true,
+        "on_error": true,
+        "include_details": true
+    }
+}

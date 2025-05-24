@@ -1,0 +1,30 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Instalacja zależności systemowych
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Kopiowanie plików wymagań
+COPY requirements.txt .
+
+# Instalacja zależności Pythona
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Kopiowanie kodu aplikacji
+COPY . .
+
+# Tworzenie katalogów
+RUN mkdir -p /app/logs /app/flows /app/dsl_definitions /app/config /app/schedules /app/emails
+
+# Ustawienie zmiennych środowiskowych
+ENV PYTHONUNBUFFERED=1
+
+# Ekspozycja portów
+EXPOSE 8765
+
+# Domyślna komenda
+CMD ["python", "mini_dashboard.py"]

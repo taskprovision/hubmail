@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Serwer SMTP i IMAP do testów
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: hubmail-mailhog
+    ports:
+      - "${MAILHOG_UI_PORT:-8025}:8025" # Interfejs webowy
+      - "${SMTP_PORT:-1025}:1025" # SMTP
+      - "${IMAP_PORT:-1143}:1143" # IMAP (symulowany przez MailHog)
+    networks:
+      - hubmail-network
+    volumes:
+      - mailhog-data:/data
+    restart: unless-stopped
+
+  # Serwer Prefect
+  prefect:
+    image: prefecthq/prefect:2.13.0-python3.9
+    container_name: hubmail-prefect
+    ports:
+      - "${PREFECT_UI_PORT:-4200}:4200" # Prefect UI
+      - "${PREFECT_API_PORT:-4201}:4201" # Prefect API
+    environment:
+      - PREFECT_UI_API_URL=http://localhost:4201/api
+      - PREFECT_API_URL=http://localhost:4201/api
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+    volumes:
+      - prefect-data:/root/.prefect
+    networks:
+      - hubmail-network
+    restart: unless-stopped
+    command: prefect server start --host 0.0.0.0 --port 4200
+
+  # Aplikacja HubMail
+  hubmail:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hubmail-app
+    depends_on:
+      - mailhog
+      - prefect
+    environment:
+      - EMAIL_IMAP_HOST=mailhog
+      - EMAIL_IMAP_PORT=1143
+      - EMAIL_IMAP_USERNAME=test@example.com
+      - EMAIL_IMAP_PASSWORD=password
+      - EMAIL_IMAP_FOLDER=INBOX
+      - EMAIL_IMAP_CHECK_INTERVAL=30
+      - EMAIL_SMTP_HOST=mailhog
+      - EMAIL_SMTP_PORT=1025
+      - EMAIL_SMTP_USERNAME=test@example.com
+      - EMAIL_SMTP_PASSWORD=password
+      - ATTACHMENTS_PATH=/app/attachments
+      - LOG_LEVEL=INFO
+      - PREFECT_API_URL=http://prefect:4201/api
+    volumes:
+      - ./:/app
+      - ./attachments:/app/attachments
+      - ./logs:/app/logs
+    networks:
+      - hubmail-network
+    restart: unless-stopped
+    # Expose debugpy port for remote debugging
+    ports:
+      - "5678:5678"
+    command: python email_flows.py
+
+networks:
+  hubmail-network:
+    driver: bridge
+
+volumes:
+  mailhog-data:
+  prefect-data:

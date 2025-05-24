@@ -91,8 +91,8 @@ Edytuj plik `.env` i zaktualizuj poniższe zmienne:
 
 ```bash
 # Konfiguracja serwera pocztowego
-EMAIL_SERVER=imap.gmail.com
-EMAIL_USER=your-email@gmail.com
+EMAIL_SERVER=imap.softreck.dev
+EMAIL_USER=info@softreck.dev
 EMAIL_PASS=your-app-password
 EMAIL_PORT=993
 EMAIL_USE_SSL=true

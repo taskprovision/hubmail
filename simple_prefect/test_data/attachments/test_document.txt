@@ -1,0 +1,5 @@
+To jest testowy dokument używany jako załącznik w testach systemu przetwarzania e-maili.
+
+Zawiera przykładowe dane, które mogą być używane do testowania funkcjonalności przetwarzania załączników.
+
+Data utworzenia: 2025-05-23

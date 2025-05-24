@@ -136,7 +136,7 @@ API_HOST=0.0.0.0
 # Email Configuration
 EMAIL_SERVER=imap.example.com
 EMAIL_PORT=993
-EMAIL_USERNAME=user@example.com
+EMAIL_USERNAME=info@softreck.dev
 EMAIL_PASSWORD=your_password
 EMAIL_USE_SSL=true
 
@@ -150,7 +150,7 @@ LLM_API_URL=http://localhost:11434
 NOTIFICATION_EMAIL=alerts@example.com
 SMTP_SERVER=smtp.example.com
 SMTP_PORT=587
-SMTP_USERNAME=user@example.com
+SMTP_USERNAME=info@softreck.dev
 SMTP_PASSWORD=your_password
 SMTP_USE_TLS=true
 ```

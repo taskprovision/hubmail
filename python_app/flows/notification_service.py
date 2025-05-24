@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 # Configuration
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 SLACK_CHANNEL = os.getenv("SLACK_CHANNEL", "#email-alerts")
-COMPANY_NAME = os.getenv("COMPANY_NAME", "Your Company")
+COMPANY_NAME = os.getenv("COMPANY_NAME", "Softreck")
 
 @task(name="Send Notification")
 async def send_notification(email: Email, analysis: EmailAnalysis) -> bool:
