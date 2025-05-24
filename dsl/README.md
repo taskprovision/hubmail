@@ -1,12 +1,34 @@
-# FlowDSL - Prosty Framework do Przepływów Oparty na Dekoratorach
+# Taskinity - Inteligentny Framework do Orkiestracji Zadań
 
-FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za pomocą prostego języka DSL i dekoratorów Python. Jest znacznie prostszy niż Prefect, Airflow czy Luigi i działa natychmiast bez skomplikowanej konfiguracji.
+Taskinity to nowoczesny framework do definiowania, zarządzania i monitorowania przepływów zadań za pomocą intuicyjnego języka DSL i dekoratorów Python. Zaprojektowany z myślą o prostocie i wydajności, Taskinity oferuje znacznie mniejszy narzut niż Prefect, Airflow czy Luigi, działając natychmiast bez skomplikowanej konfiguracji.
 
-![FlowDSL Logo](https://via.placeholder.com/150x50/0078D4/FFFFFF?text=FlowDSL)
+![Taskinity Logo](./assets/taskinity-logo.svg)
+
+## Misja
+
+Naszą misją jest dostarczenie prostego, ale potężnego narzędzia do orkiestracji zadań, które pozwala zespołom skupić się na logice biznesowej, a nie na zarządzaniu infrastrukturą. Wierzymy, że automatyzacja przepływów pracy powinna być dostępna dla wszystkich, niezależnie od wielkości zespołu czy budżetu.
+
+## Strategia
+
+Taskinity realizuje swoją misję poprzez:
+
+1. **Prostotę użycia** - intuicyjny interfejs i minimalna konfiguracja
+2. **Skalowalność** - od prostych skryptów po złożone przepływy produkcyjne
+3. **Elastyczność** - łatwa integracja z istniejącymi systemami i narzędziami
+4. **Transparentność** - pełna widoczność stanu i historii wykonania zadań
+5. **Niezawodność** - odporność na błędy i mechanizmy automatycznego odzyskiwania
+
+## Menu Nawigacyjne
+
+- [Dokumentacja](./docs/dokumentacja.md) - Pełna dokumentacja techniczna
+- [Samouczek](./docs/samouczek.md) - Krok po kroku wprowadzenie do Taskinity
+- [Przykłady](./docs/przyklady.md) - Gotowe przykłady przepływów
+- [FAQ](./docs/faq.md) - Najczęściej zadawane pytania
+- [Rozwiązywanie problemów](./docs/troubleshooting.md) - Pomoc w rozwiązywaniu problemów
 
 ## Spis treści
 
-- [Zalety FlowDSL](#zalety-flowdsl)
+- [Zalety Taskinity](#zalety-taskinity)
 - [Szybki start](#szybki-start)
 - [Specyfikacja DSL](#specyfikacja-dsl)
 - [Przykłady użycia](#przykłady-użycia)
@@ -14,38 +36,50 @@ FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za
 - [Monitorowanie i logi](#monitorowanie-i-logi)
 - [Porównanie z innymi frameworkami](#porównanie-z-innymi-frameworkami)
 - [Dashboard](#dashboard)
+- [Powiadomienia](#powiadomienia)
+- [Równoległe Wykonanie](#równoległe-wykonanie)
+- [Planowanie Przepływów](#planowanie-przepływów)
+- [Przetwarzanie Email](#przetwarzanie-email)
 - [API Reference](#api-reference)
 - [Rozszerzenia i ulepszenia](#rozszerzenia-i-ulepszenia)
 
-## Zalety FlowDSL
+## Zalety Taskinity
 
 - **Prostota** - minimalny zestaw funkcji, łatwy do zrozumienia i rozszerzenia
 - **Dekoratory** - intuicyjny sposób definiowania zadań i przepływów
-- **DSL** - prosty język do definiowania połączeń między zadaniami
-- **Brak zależności zewnętrznych** - działa natychmiast, bez skomplikowanej konfiguracji
-- **Lekki monitoring** - automatyczne logowanie i śledzenie wykonania
-- **Wizualizacja** - proste narzędzia do wizualizacji przepływów
-- **Walidacja danych** - możliwość walidacji danych wejściowych i wyjściowych
+- **DSL** - czytelny język do definiowania połączeń między zadaniami
+- **Zero-config** - działa natychmiast, bez skomplikowanej konfiguracji
+- **Zaawansowany monitoring** - automatyczne logowanie i śledzenie wykonania z metrykami
+- **Wizualizacja** - interaktywne narzędzia do wizualizacji przepływów
+- **Walidacja danych** - wbudowane mechanizmy walidacji danych wejściowych i wyjściowych
+- **Równoległe wykonanie** - automatyczna optymalizacja przepływów dla lepszej wydajności
+- **Odtwarzalność** - pełna historia wykonania i możliwość odtworzenia przepływów
 
 ## Szybki start
 
 ### Instalacja
 
-Nie wymaga instalacji - wystarczy skopiować pliki do projektu.
+Taskinity można zainstalować za pomocą pip lub poetry:
 
 ```bash
-# Klonowanie repozytorium
-git clone https://github.com/taskprovision/hubmail.git
-cd hubmail/dsl
+# Instalacja przez pip
+pip install taskinity
+
+# LUB instalacja przez poetry
+poetry add taskinity
+
+# Klonowanie repozytorium (opcjonalnie dla najnowszej wersji rozwojowej)
+git clone https://github.com/taskprovision/taskinity.git
+cd taskinity
 
 # Uruchomienie przykładu
-python -m email_processor
+python -m examples.basic_flow
 ```
 
 ### Podstawowe użycie
 
 ```python
-from flow_dsl import task, run_flow_from_dsl
+from taskinity import task, run_flow_from_dsl
 
 # 1. Definiowanie zadań
 @task(name="Pobieranie danych")
@@ -71,7 +105,7 @@ results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
 
 ## Specyfikacja DSL
 
-FlowDSL używa prostego języka do definiowania przepływów:
+Taskinity używa czytelnego języka do definiowania przepływów:
 
 ```
 flow [NazwaPrzepływu]:
@@ -597,4 +631,4 @@ Zwraca listę wszystkich wykonanych przepływów.
 
 ## Licencja
 
-MIT
+[LICENSE](LICENSE)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tło logo -->
+  <rect x="10" y="10" width="280" height="80" rx="15" ry="15" fill="#0078D4" />
+  
+  <!-- Tekst "FlowDSL" -->
+  <text x="150" y="60" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle" fill="#FFFFFF">FlowDSL</text>
+  
+  <!-- Ikona przepływu - strzałki -->
+  <path d="M50,50 L80,50 M80,50 L70,45 M80,50 L70,55" stroke="#FFFFFF" stroke-width="3" fill="none" />
+  <path d="M120,50 L150,50 M150,50 L140,45 M150,50 L140,55" stroke="#FFFFFF" stroke-width="3" fill="none" />
+  <path d="M190,50 L220,50 M220,50 L210,45 M220,50 L210,55" stroke="#FFFFFF" stroke-width="3" fill="none" />
+  
+  <!-- Węzły przepływu -->
+  <circle cx="40" cy="50" r="8" fill="#FFFFFF" />
+  <circle cx="110" cy="50" r="8" fill="#FFFFFF" />
+  <circle cx="180" cy="50" r="8" fill="#FFFFFF" />
+  <circle cx="250" cy="50" r="8" fill="#FFFFFF" />
+</svg>
