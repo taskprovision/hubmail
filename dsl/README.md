@@ -220,7 +220,7 @@ results = run_flow_from_dsl(data_dsl, {})
 
 ## Wizualizacja przepływów
 
-FlowDSL zawiera proste narzędzia do wizualizacji przepływów:
+taskinity zawiera proste narzędzia do wizualizacji przepływów:
 
 ```python
 # Wizualizacja definicji DSL
@@ -235,7 +235,7 @@ python visualize_flow.py list --flows
 
 ## Monitorowanie i logi
 
-FlowDSL automatycznie zapisuje logi wykonania przepływów w katalogu `logs/`. Można je łatwo przeglądać za pomocą standardowych narzędzi:
+taskinity automatycznie zapisuje logi wykonania przepływów w katalogu `logs/`. Można je łatwo przeglądać za pomocą standardowych narzędzi:
 
 ```python
 # Wyświetlenie logów dla konkretnego przepływu
@@ -272,7 +272,7 @@ def view_flow_logs(flow_id):
 
 ### Tabela Porównawcza Frameworków
 
-| Kryterium               | FlowDSL                  | Prefect                   | Airflow                  | Luigi                     | Bonobo                   | Kedro                    | Mara                     |
+| Kryterium               | taskinity                  | Prefect                   | Airflow                  | Luigi                     | Bonobo                   | Kedro                    | Mara                     |
 |-------------------------|--------------------------|---------------------------|--------------------------|---------------------------|--------------------------|--------------------------|--------------------------|  
 | **Typ Projektu**        | Lekkie przepływy          | Złożone orchestracje      | Złożone ETL              | Proste ETL                | ETL strumieniowe         | Pipeline'y danych        | Proste ETL               |
 | **Składnia**            | DSL + dekoratory          | Dekoratory `@flow/@task`  | Klasy z `DAG`            | Klasy z `run()`           | Funkcje + graf           | Węzły i pipeline'y       | Funkcje + dekoratory     |
@@ -289,7 +289,7 @@ def view_flow_logs(flow_id):
 
 ### Implementacje Przykładowe
 
-#### 1. FlowDSL: Automatyzacja Klasyfikacji Emaili
+#### 1. taskinity: Automatyzacja Klasyfikacji Emaili
 ```python
 from flow_dsl import task, run_flow_from_dsl
 
@@ -352,7 +352,7 @@ pipeline = Pipeline([
 kedro run
 ```
 
-### Kiedy używać FlowDSL?
+### Kiedy używać taskinity?
 
 - **Małe i średnie projekty**: Gdy potrzebujesz szybko zaimplementować przepływ pracy bez nadmiernej złożoności
 - **Prototypowanie**: Gdy chcesz szybko przetestować koncepcję przepływu bez konfiguracji infrastruktury
@@ -364,7 +364,7 @@ kedro run
 
 - **Prefect**: Gdy potrzebujesz zaawansowanego monitorowania, skalowania i integracji z chmurą
 - **Airflow**: Gdy potrzebujesz zaawansowanego planowania, wielu integracji i masz duży zespół DevOps
-- **Luigi**: Gdy potrzebujesz prostszego frameworka niż Airflow, ale bardziej rozbudowanego niż FlowDSL
+- **Luigi**: Gdy potrzebujesz prostszego frameworka niż Airflow, ale bardziej rozbudowanego niż taskinity
 - **Bonobo**: Gdy potrzebujesz przetwarzania strumieniowego i prostych transformacji ETL
 - **Kedro**: Gdy pracujesz nad projektami data science i potrzebujesz struktury projektu
 - **Mara**: Gdy potrzebujesz prostego ETL z interfejsem webowym
@@ -372,7 +372,7 @@ kedro run
 ### Rekomendowany Stack Technologiczny
 
 #### Dla Małych Zespołów (do 10 użytkowników):
-- **Orchestracja**: FlowDSL (prostota) lub Mara (ETL + UI)
+- **Orchestracja**: taskinity (prostota) lub Mara (ETL + UI)
 - **Przetwarzanie**: Pandas/NumPy
 - **ML**: Scikit-learn/Hugging Face Transformers
 - **Dashboard**: Streamlit (szybki prototyp)
@@ -385,7 +385,7 @@ kedro run
 
 ## Dashboardy i Wizualizacja
 
-FlowDSL oferuje dwa rodzaje dashboardów do monitorowania przepływów:
+taskinity oferuje dwa rodzaje dashboardów do monitorowania przepływów:
 
 ### 1. Mini Dashboard
 
@@ -458,7 +458,7 @@ process_regular_emails --> send_responses
 
 ## Powiadomienia
 
-FlowDSL oferuje system powiadomień o statusie przepływów przez email i Slack:
+taskinity oferuje system powiadomień o statusie przepływów przez email i Slack:
 
 ### Konfiguracja Powiadomień
 
@@ -482,7 +482,7 @@ POST /api/notifications/config
 
 ## Równoległe Wykonanie
 
-FlowDSL umożliwia równoległe wykonanie niezależnych zadań w przepływie:
+taskinity umożliwia równoległe wykonanie niezależnych zadań w przepływie:
 
 ```python
 # Uruchomienie przepływu z równoległym wykonaniem
@@ -509,7 +509,7 @@ POST /api/run
 
 ## Planowanie Przepływów
 
-FlowDSL pozwala na planowanie automatycznego wykonania przepływów:
+taskinity pozwala na planowanie automatycznego wykonania przepływów:
 
 ```bash
 # Uruchomienie planera

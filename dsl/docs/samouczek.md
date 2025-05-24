@@ -1,4 +1,4 @@
-# Samouczek FlowDSL
+# Samouczek taskinity
 
 ## Spis treści
 
@@ -17,11 +17,11 @@
 
 ## Wprowadzenie
 
-FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań. W tym samouczku przeprowadzimy Cię krok po kroku przez proces tworzenia, uruchamiania i zarządzania przepływami zadań za pomocą FlowDSL.
+taskinity to lekki framework do definiowania i uruchamiania przepływów zadań. W tym samouczku przeprowadzimy Cię krok po kroku przez proces tworzenia, uruchamiania i zarządzania przepływami zadań za pomocą taskinity.
 
 ## Krok 1: Instalacja
 
-FlowDSL nie wymaga skomplikowanej instalacji. Wystarczy sklonować repozytorium i zainstalować zależności:
+taskinity nie wymaga skomplikowanej instalacji. Wystarczy sklonować repozytorium i zainstalować zależności:
 
 ```bash
 # Klonowanie repozytorium
@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 ## Krok 2: Tworzenie pierwszego zadania
 
-Zadania w FlowDSL definiuje się za pomocą dekoratora `@task`. Utwórz plik `my_flow.py` i dodaj do niego pierwsze zadanie:
+Zadania w taskinity definiuje się za pomocą dekoratora `@task`. Utwórz plik `my_flow.py` i dodaj do niego pierwsze zadanie:
 
 ```python
 from flow_dsl import task
@@ -115,7 +115,7 @@ Wyniki przepływu:
 
 ## Krok 5: Wizualizacja przepływu
 
-FlowDSL umożliwia wizualizację przepływów. Dodaj do pliku `my_flow.py`:
+taskinity umożliwia wizualizację przepływów. Dodaj do pliku `my_flow.py`:
 
 ```python
 from flow_visualizer import visualize_dsl
@@ -143,7 +143,7 @@ Powinieneś zobaczyć komunikat o zapisaniu wizualizacji do pliku `my_flow.png`.
 
 ## Krok 6: Monitorowanie i logi
 
-FlowDSL automatycznie zapisuje logi wykonania przepływów. Sprawdźmy, jak możemy je przeglądać:
+taskinity automatycznie zapisuje logi wykonania przepływów. Sprawdźmy, jak możemy je przeglądać:
 
 ```python
 import json
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
 ## Krok 7: Korzystanie z dashboardu
 
-FlowDSL zawiera dashboard do zarządzania przepływami. Uruchom mini dashboard:
+taskinity zawiera dashboard do zarządzania przepływami. Uruchom mini dashboard:
 
 ```bash
 python mini_dashboard.py
@@ -199,7 +199,7 @@ Dashboard będzie dostępny pod adresem http://localhost:8765. Możesz:
 
 ## Krok 8: Konfiguracja powiadomień
 
-FlowDSL umożliwia wysyłanie powiadomień o statusie przepływów. Skonfigurujmy powiadomienia email:
+taskinity umożliwia wysyłanie powiadomień o statusie przepływów. Skonfigurujmy powiadomienia email:
 
 ```python
 from notification_service import load_config, save_config, send_email_notification
@@ -214,19 +214,19 @@ config["email"]["smtp_server"] = "smtp.example.com"
 config["email"]["smtp_port"] = 587
 config["email"]["username"] = "user@example.com"
 config["email"]["password"] = "password123"
-config["email"]["from_email"] = "flowdsl@example.com"
+config["email"]["from_email"] = "taskinity@example.com"
 config["email"]["recipients"] = ["admin@example.com"]
 
 # Zapisanie konfiguracji
 save_config(config)
 
 # Wysłanie testowego powiadomienia
-send_email_notification("Test powiadomień FlowDSL", "To jest testowe powiadomienie z FlowDSL.")
+send_email_notification("Test powiadomień taskinity", "To jest testowe powiadomienie z taskinity.")
 ```
 
 ## Krok 9: Równoległe wykonanie
 
-FlowDSL umożliwia równoległe wykonanie niezależnych zadań. Zmodyfikujmy nasz przepływ, aby wykorzystać równoległe wykonanie:
+taskinity umożliwia równoległe wykonanie niezależnych zadań. Zmodyfikujmy nasz przepływ, aby wykorzystać równoległe wykonanie:
 
 ```python
 from flow_dsl import task
@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
 ## Krok 10: Planowanie przepływów
 
-FlowDSL pozwala na planowanie automatycznego wykonania przepływów. Utwórzmy harmonogram dla naszego przepływu:
+taskinity pozwala na planowanie automatycznego wykonania przepływów. Utwórzmy harmonogram dla naszego przepływu:
 
 ```python
 from flow_scheduler import Scheduler
@@ -307,11 +307,11 @@ python flow_scheduler.py delete [schedule_id]
 
 ## Następne kroki
 
-Gratulacje! Przeszedłeś przez podstawowe funkcje FlowDSL. Oto kilka pomysłów na dalsze kroki:
+Gratulacje! Przeszedłeś przez podstawowe funkcje taskinity. Oto kilka pomysłów na dalsze kroki:
 
 1. **Zaawansowane przepływy** - twórz bardziej złożone przepływy z warunkami i pętlami
-2. **Integracja z innymi systemami** - integruj FlowDSL z bazami danych, API i innymi systemami
-3. **Rozszerzanie funkcjonalności** - dodawaj własne funkcje i moduły do FlowDSL
-4. **Automatyzacja procesów** - automatyzuj powtarzalne procesy za pomocą FlowDSL
+2. **Integracja z innymi systemami** - integruj taskinity z bazami danych, API i innymi systemami
+3. **Rozszerzanie funkcjonalności** - dodawaj własne funkcje i moduły do taskinity
+4. **Automatyzacja procesów** - automatyzuj powtarzalne procesy za pomocą taskinity
 
 Więcej informacji znajdziesz w [dokumentacji technicznej](./dokumentacja.md) i [przykładach](./przyklady.md).

@@ -1,4 +1,4 @@
-# Przykłady FlowDSL
+# Przykłady taskinity
 
 ## Spis treści
 
@@ -562,4 +562,4 @@ scheduler.add_schedule(
 scheduler.start()
 ```
 
-Te przykłady pokazują różne zastosowania FlowDSL, od prostych przepływów sekwencyjnych po zaawansowane scenariusze z równoległym wykonaniem i planowaniem. Możesz je dostosować do swoich potrzeb i używać jako punktu wyjścia do tworzenia własnych przepływów.
+Te przykłady pokazują różne zastosowania taskinity, od prostych przepływów sekwencyjnych po zaawansowane scenariusze z równoległym wykonaniem i planowaniem. Możesz je dostosować do swoich potrzeb i używać jako punktu wyjścia do tworzenia własnych przepływów.

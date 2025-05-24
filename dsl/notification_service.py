@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Moduł do obsługi powiadomień dla FlowDSL.
+Moduł do obsługi powiadomień dla taskinity.
 Obsługuje powiadomienia email i Slack o statusie przepływów.
 """
 import os
@@ -47,7 +47,7 @@ DEFAULT_CONFIG = {
         "enabled": False,
         "webhook_url": "",
         "channel": "#flow-notifications",
-        "username": "FlowDSL Bot"
+        "username": "taskinity Bot"
     },
     "notification_rules": {
         "on_start": True,
@@ -248,7 +248,7 @@ def send_slack_notification(title: str, message: str, config: Optional[Dict[str,
         # Przygotowanie danych
         payload = {
             "channel": slack_config.get("channel", "#flow-notifications"),
-            "username": slack_config.get("username", "FlowDSL Bot"),
+            "username": slack_config.get("username", "taskinity Bot"),
             "text": f"*{title}*\n{message}",
             "icon_emoji": ":gear:"
         }

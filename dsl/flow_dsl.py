@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FlowDSL - prosty framework do definiowania przepływów za pomocą dekoratorów i DSL.
+taskinity - prosty framework do definiowania przepływów za pomocą dekoratorów i DSL.
 Pozwala na łatwe łączenie funkcji w przepływy i monitorowanie ich wykonania.
 """
 import functools

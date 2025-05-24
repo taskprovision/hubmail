@@ -1,4 +1,4 @@
-# Dokumentacja Techniczna FlowDSL
+# Dokumentacja Techniczna taskinity
 
 ## Spis treści
 
@@ -14,7 +14,7 @@
 
 ## Wprowadzenie
 
-FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za pomocą prostego języka DSL i dekoratorów Python. Został zaprojektowany z myślą o prostocie i elastyczności, umożliwiając szybkie tworzenie i zarządzanie przepływami zadań bez konieczności konfiguracji skomplikowanej infrastruktury.
+taskinity to lekki framework do definiowania i uruchamiania przepływów zadań za pomocą prostego języka DSL i dekoratorów Python. Został zaprojektowany z myślą o prostocie i elastyczności, umożliwiając szybkie tworzenie i zarządzanie przepływami zadań bez konieczności konfiguracji skomplikowanej infrastruktury.
 
 ### Główne cechy
 
@@ -30,7 +30,7 @@ FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za
 
 ## Architektura
 
-FlowDSL składa się z następujących głównych komponentów:
+taskinity składa się z następujących głównych komponentów:
 
 1. **Parser DSL** - odpowiedzialny za parsowanie definicji przepływów
 2. **Silnik wykonawczy** - zarządza wykonaniem zadań i przepływów
@@ -68,7 +68,7 @@ FlowDSL składa się z następujących głównych komponentów:
 
 ## Instalacja
 
-FlowDSL nie wymaga skomplikowanej instalacji. Wystarczy skopiować pliki do projektu lub sklonować repozytorium:
+taskinity nie wymaga skomplikowanej instalacji. Wystarczy skopiować pliki do projektu lub sklonować repozytorium:
 
 ```bash
 # Klonowanie repozytorium
@@ -107,7 +107,7 @@ Parametry:
 
 ### Język DSL
 
-FlowDSL używa prostego języka do definiowania przepływów:
+taskinity używa prostego języka do definiowania przepływów:
 
 ```
 flow [NazwaPrzepływu]:
@@ -146,7 +146,7 @@ Parametry:
 
 ### Wizualizacja przepływów
 
-FlowDSL zawiera narzędzia do wizualizacji przepływów:
+taskinity zawiera narzędzia do wizualizacji przepływów:
 
 ```python
 from flow_visualizer import visualize_dsl, visualize_flow
@@ -160,7 +160,7 @@ visualize_flow(flow_id, output_file="execution_diagram.png")
 
 ### Dashboard
 
-FlowDSL zawiera dwa dashboardy do zarządzania przepływami:
+taskinity zawiera dwa dashboardy do zarządzania przepływami:
 
 1. **Mini Dashboard** - prosty dashboard z podstawowymi funkcjami:
 
@@ -176,7 +176,7 @@ python simple_dashboard.py
 
 ### Powiadomienia
 
-FlowDSL umożliwia wysyłanie powiadomień o statusie przepływów:
+taskinity umożliwia wysyłanie powiadomień o statusie przepływów:
 
 ```python
 from notification_service import send_email_notification, send_slack_notification
@@ -190,7 +190,7 @@ send_slack_notification("Przepływ zakończony", "Przepływ XYZ zakończony pomy
 
 ### Równoległe wykonanie
 
-FlowDSL umożliwia równoległe wykonanie niezależnych zadań w przepływie:
+taskinity umożliwia równoległe wykonanie niezależnych zadań w przepływie:
 
 ```python
 from parallel_executor import run_parallel_flow_from_dsl
@@ -200,7 +200,7 @@ result = run_parallel_flow_from_dsl(dsl_content, input_data)
 
 ### Planowanie przepływów
 
-FlowDSL pozwala na planowanie automatycznego wykonania przepływów:
+taskinity pozwala na planowanie automatycznego wykonania przepływów:
 
 ```python
 from flow_scheduler import Scheduler
@@ -217,7 +217,7 @@ scheduler.start()
 
 ### Przetwarzanie email
 
-FlowDSL zawiera moduł do przetwarzania emaili:
+taskinity zawiera moduł do przetwarzania emaili:
 
 ```python
 from email_pipeline import EmailProcessor
@@ -282,7 +282,7 @@ processor.process_emails()
 
 ## Integracje
 
-FlowDSL może być łatwo zintegrowany z innymi narzędziami i systemami:
+taskinity może być łatwo zintegrowany z innymi narzędziami i systemami:
 
 ### Integracja z systemami powiadomień
 
@@ -326,7 +326,7 @@ FlowDSL może być łatwo zintegrowany z innymi narzędziami i systemami:
 
 ### Logi i debugowanie
 
-FlowDSL zapisuje logi w katalogu `logs/`:
+taskinity zapisuje logi w katalogu `logs/`:
 
 - `flow_dsl.log` - logi głównego modułu
 - `mini_dashboard.log` - logi mini dashboardu

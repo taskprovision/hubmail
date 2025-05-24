@@ -87,7 +87,7 @@ DEFAULT_EMAIL_CONFIG = {
             "priority": "Dziękujemy za pilną wiadomość. Zajmiemy się nią priorytetowo.",
             "support": "Dziękujemy za zgłoszenie. Nasz zespół wsparcia skontaktuje się z Tobą wkrótce."
         },
-        "signature": "\n\nPozdrawiamy,\nZespół FlowDSL",
+        "signature": "\n\nPozdrawiamy,\nZespół taskinity",
         "reply_to_all": False,
         "add_original_message": True,
         "cooldown_hours": 24  # Nie odpowiadaj ponownie do tego samego nadawcy przez 24h

@@ -32,9 +32,9 @@
    ```
 3. Jeśli występują konflikty wersji, rozważ utworzenie wirtualnego środowiska:
    ```bash
-   python -m venv flowdsl_env
-   source flowdsl_env/bin/activate  # Linux/macOS
-   flowdsl_env\Scripts\activate     # Windows
+   python -m venv taskinity_env
+   source taskinity_env/bin/activate  # Linux/macOS
+   taskinity_env\Scripts\activate     # Windows
    pip install -r requirements.txt
    ```
 

@@ -8,7 +8,7 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== FlowDSL - Uruchamianie środowiska testowego dla powiadomień email ===${NC}"
+echo -e "${BLUE}=== taskinity - Uruchamianie środowiska testowego dla powiadomień email ===${NC}"
 
 # Sprawdzenie, czy Docker jest zainstalowany
 if ! command -v docker &> /dev/null; then
@@ -38,14 +38,14 @@ if [ ! -f "config/notification_config.json" ]; then
         "smtp_port": 1025,
         "username": "test",
         "password": "test",
-        "from_email": "flowdsl@example.com",
+        "from_email": "taskinity@example.com",
         "recipients": ["info@softreck.dev"]
     },
     "slack": {
         "enabled": false,
         "webhook_url": "",
         "channel": "#flow-notifications",
-        "username": "FlowDSL Bot"
+        "username": "taskinity Bot"
     },
     "notification_rules": {
         "on_start": true,
@@ -76,7 +76,7 @@ if [ ! -f "config/email_config.json" ]; then
         "port": 1025,
         "username": "test",
         "password": "test",
-        "from_email": "flowdsl@example.com",
+        "from_email": "taskinity@example.com",
         "use_tls": false
     },
     "auto_reply": {
@@ -91,7 +91,7 @@ if [ ! -f "config/email_config.json" ]; then
             "priority": "Dziękujemy za pilną wiadomość. Zajmiemy się nią priorytetowo.",
             "support": "Dziękujemy za zgłoszenie. Nasz zespół wsparcia skontaktuje się z Tobą wkrótce."
         },
-        "signature": "\n\nPozdrawiamy,\nZespół FlowDSL",
+        "signature": "\n\nPozdrawiamy,\nZespół taskinity",
         "reply_to_all": false,
         "add_original_message": true,
         "cooldown_hours": 24
@@ -216,7 +216,7 @@ if [ $? -eq 0 ]; then
     echo -e "\n${BLUE}Aby wysłać testowy email:${NC}"
     echo -e "curl -X POST http://localhost:8025/api/v2/send \
     -H \"Content-Type: application/json\" \
-    -d '{\"From\":\"test@example.com\",\"To\":[\"flowdsl@example.com\"],\"Subject\":\"Pilne pytanie o wsparcie\",\"Text\":\"Potrzebuję pilnej pomocy z moim zamówieniem.\"}'"
+    -d '{\"From\":\"test@example.com\",\"To\":[\"taskinity@example.com\"],\"Subject\":\"Pilne pytanie o wsparcie\",\"Text\":\"Potrzebuję pilnej pomocy z moim zamówieniem.\"}'"
 else
     echo -e "${RED}Wystąpił błąd podczas uruchamiania środowiska.${NC}"
     exit 1

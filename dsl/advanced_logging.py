@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Moduł zaawansowanego logowania dla FlowDSL.
+Moduł zaawansowanego logowania dla taskinity.
 Zapewnia szczegółowe logowanie z formatowaniem, rotacją plików i konfigurowalnymi poziomami logowania.
 """
 import os

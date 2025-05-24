@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mini Dashboard dla FlowDSL - prosty interfejs do monitorowania przepływów.
+Mini Dashboard dla taskinity - prosty interfejs do monitorowania przepływów.
 """
 import os
 import json
@@ -18,7 +18,7 @@ from pydantic import BaseModel
 # Import funkcji do wizualizacji
 from flow_visualizer import generate_mermaid_from_dsl, generate_mermaid_from_flow_history
 
-# Importy z FlowDSL
+# Importy z taskinity
 from flow_dsl import (
     parse_dsl, load_dsl, list_dsl_files, list_flows, 
     run_flow_from_dsl, save_dsl
@@ -47,7 +47,7 @@ except ImportError:
     SCHEDULER_AVAILABLE = False
 
 # Inicjalizacja aplikacji FastAPI
-app = FastAPI(title="FlowDSL Mini Dashboard")
+app = FastAPI(title="taskinity Mini Dashboard")
 
 # Katalogi
 BASE_DIR = Path(__file__).parent
@@ -66,7 +66,7 @@ with open(BASE_DIR / "templates" / "mini.html", "w") as f:
     f.write("""<!DOCTYPE html>
 <html>
 <head>
-    <title>FlowDSL Mini Dashboard</title>
+    <title>taskinity Mini Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -324,7 +324,7 @@ with open(BASE_DIR / "templates" / "mini.html", "w") as f:
 <body>
     <div class="container">
         <div class="header">
-            <h1>FlowDSL Mini Dashboard</h1>
+            <h1>taskinity Mini Dashboard</h1>
         </div>
         
         <div class="content">

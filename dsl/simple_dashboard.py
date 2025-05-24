@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Prosty dashboard do monitorowania przepływów i logów FlowDSL.
+Prosty dashboard do monitorowania przepływów i logów taskinity.
 Minimalistyczna implementacja z użyciem FastAPI i HTML/JavaScript.
 """
 import os
@@ -20,14 +20,14 @@ from pydantic import BaseModel
 # Import funkcji do wizualizacji
 from flow_visualizer import generate_mermaid_from_dsl, generate_mermaid_from_flow_history
 
-# Importy z FlowDSL
+# Importy z taskinity
 from flow_dsl import (
     parse_dsl, load_dsl, list_dsl_files, list_flows, 
     run_flow_from_dsl, save_dsl
 )
 
 # Inicjalizacja aplikacji FastAPI
-app = FastAPI(title="FlowDSL Dashboard")
+app = FastAPI(title="taskinity Dashboard")
 
 # Katalogi
 BASE_DIR = Path(__file__).parent
@@ -46,7 +46,7 @@ with open(BASE_DIR / "templates" / "index.html", "w") as f:
     f.write("""<!DOCTYPE html>
 <html>
 <head>
-    <title>FlowDSL Dashboard</title>
+    <title>taskinity Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -236,7 +236,7 @@ with open(BASE_DIR / "templates" / "index.html", "w") as f:
 <body>
     <div class="container">
         <div class="header">
-            <h1>FlowDSL Dashboard</h1>
+            <h1>taskinity Dashboard</h1>
             <p>Prosty monitoring przepływów i logów</p>
         </div>
         

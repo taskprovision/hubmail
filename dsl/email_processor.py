@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Przykład użycia FlowDSL do przetwarzania e-maili.
+Przykład użycia taskinity do przetwarzania e-maili.
 """
 import json
 import os

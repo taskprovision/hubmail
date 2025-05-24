@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Moduł do równoległego wykonania zadań w FlowDSL.
+Moduł do równoległego wykonania zadań w taskinity.
 Umożliwia równoległe wykonanie niezależnych zadań w przepływie.
 """
 import os

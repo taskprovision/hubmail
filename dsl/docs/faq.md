@@ -16,11 +16,11 @@
 
 ## Ogólne pytania
 
-### Czym jest FlowDSL?
+### Czym jest taskinity?
 
-FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za pomocą prostego języka DSL i dekoratorów Python. Jest znacznie prostszy niż Prefect, Airflow czy Luigi i działa natychmiast bez skomplikowanej konfiguracji.
+taskinity to lekki framework do definiowania i uruchamiania przepływów zadań za pomocą prostego języka DSL i dekoratorów Python. Jest znacznie prostszy niż Prefect, Airflow czy Luigi i działa natychmiast bez skomplikowanej konfiguracji.
 
-### Jakie są główne zalety FlowDSL?
+### Jakie są główne zalety taskinity?
 
 - **Prostota** - minimalny zestaw funkcji, łatwy do zrozumienia i rozszerzenia
 - **Dekoratory** - intuicyjny sposób definiowania zadań i przepływów
@@ -30,19 +30,19 @@ FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za
 - **Wizualizacja** - proste narzędzia do wizualizacji przepływów
 - **Walidacja danych** - możliwość walidacji danych wejściowych i wyjściowych
 
-### Czy FlowDSL jest odpowiedni dla dużych projektów?
+### Czy taskinity jest odpowiedni dla dużych projektów?
 
-FlowDSL jest idealny dla małych i średnich projektów. Dla dużych projektów z setkami zadań i skomplikowaną logiką, warto rozważyć bardziej zaawansowane narzędzia jak Airflow czy Prefect. Jednak nawet w dużych projektach FlowDSL może być używany do prototypowania i szybkiego testowania przepływów.
+taskinity jest idealny dla małych i średnich projektów. Dla dużych projektów z setkami zadań i skomplikowaną logiką, warto rozważyć bardziej zaawansowane narzędzia jak Airflow czy Prefect. Jednak nawet w dużych projektach taskinity może być używany do prototypowania i szybkiego testowania przepływów.
 
-### Czy FlowDSL jest aktywnie rozwijany?
+### Czy taskinity jest aktywnie rozwijany?
 
-Tak, FlowDSL jest aktywnie rozwijany. Regularnie dodajemy nowe funkcje i ulepszenia, takie jak równoległe wykonanie, planowanie przepływów i przetwarzanie email.
+Tak, taskinity jest aktywnie rozwijany. Regularnie dodajemy nowe funkcje i ulepszenia, takie jak równoległe wykonanie, planowanie przepływów i przetwarzanie email.
 
 ## Instalacja i konfiguracja
 
-### Jak zainstalować FlowDSL?
+### Jak zainstalować taskinity?
 
-FlowDSL nie wymaga skomplikowanej instalacji. Wystarczy sklonować repozytorium i zainstalować zależności:
+taskinity nie wymaga skomplikowanej instalacji. Wystarczy sklonować repozytorium i zainstalować zależności:
 
 ```bash
 # Klonowanie repozytorium
@@ -58,17 +58,17 @@ pip install -r requirements.txt
 - Python 3.7+
 - Zależności wymienione w `requirements.txt`
 
-### Czy FlowDSL działa na Windows/Linux/macOS?
+### Czy taskinity działa na Windows/Linux/macOS?
 
-Tak, FlowDSL działa na wszystkich głównych systemach operacyjnych: Windows, Linux i macOS.
+Tak, taskinity działa na wszystkich głównych systemach operacyjnych: Windows, Linux i macOS.
 
-### Czy mogę używać FlowDSL w kontenerach Docker?
+### Czy mogę używać taskinity w kontenerach Docker?
 
-Tak, FlowDSL może być łatwo uruchamiany w kontenerach Docker. W repozytorium znajduje się przykładowy plik `Dockerfile.dashboard` i `docker-compose-email.yml`.
+Tak, taskinity może być łatwo uruchamiany w kontenerach Docker. W repozytorium znajduje się przykładowy plik `Dockerfile.dashboard` i `docker-compose-email.yml`.
 
 ## Definiowanie przepływów
 
-### Jak zdefiniować zadanie w FlowDSL?
+### Jak zdefiniować zadanie w taskinity?
 
 Zadania definiuje się za pomocą dekoratora `@task`:
 
@@ -81,7 +81,7 @@ def fetch_data(url: str):
     return data
 ```
 
-### Jak zdefiniować przepływ w FlowDSL?
+### Jak zdefiniować przepływ w taskinity?
 
 Przepływy definiuje się za pomocą prostego języka DSL:
 
@@ -110,7 +110,7 @@ flow DataProcessing:
 
 ### Czy mogę definiować warunki w przepływach?
 
-Obecnie FlowDSL nie obsługuje bezpośrednio warunków w definicji DSL. Możesz jednak implementować logikę warunkową wewnątrz zadań.
+Obecnie taskinity nie obsługuje bezpośrednio warunków w definicji DSL. Możesz jednak implementować logikę warunkową wewnątrz zadań.
 
 ## Uruchamianie przepływów
 
@@ -159,7 +159,7 @@ results = run_flow_from_dsl(dsl_content, input_data)
 
 ### Jak wizualizować przepływ?
 
-FlowDSL zawiera narzędzia do wizualizacji przepływów:
+taskinity zawiera narzędzia do wizualizacji przepływów:
 
 ```python
 from flow_visualizer import visualize_dsl
@@ -169,7 +169,7 @@ visualize_dsl(flow_dsl, output_file="flow_diagram.png")
 
 ### Jakie formaty wizualizacji są obsługiwane?
 
-FlowDSL obsługuje wizualizację w formatach PNG, SVG i Mermaid.
+taskinity obsługuje wizualizację w formatach PNG, SVG i Mermaid.
 
 ### Czy mogę wizualizować historię wykonania przepływu?
 
@@ -189,7 +189,7 @@ Dashboard automatycznie wizualizuje przepływy. Wystarczy uruchomić dashboard i
 
 ### Jak uruchomić dashboard?
 
-FlowDSL zawiera dwa dashboardy:
+taskinity zawiera dwa dashboardy:
 
 1. **Mini Dashboard**:
 ```bash
@@ -239,7 +239,7 @@ Powiadomienia email konfiguruje się w pliku `config/notification_config.json`:
         "smtp_port": 587,
         "username": "user@example.com",
         "password": "password123",
-        "from_email": "flowdsl@example.com",
+        "from_email": "taskinity@example.com",
         "recipients": ["admin@example.com"]
     }
 }
@@ -256,7 +256,7 @@ Powiadomienia Slack konfiguruje się w pliku `config/notification_config.json`:
         "enabled": true,
         "webhook_url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
         "channel": "#flow-notifications",
-        "username": "FlowDSL Bot"
+        "username": "taskinity Bot"
     }
 }
 ```
@@ -334,7 +334,7 @@ scheduler.start()
 
 ### Jakie typy harmonogramów są obsługiwane?
 
-FlowDSL obsługuje następujące typy harmonogramów:
+taskinity obsługuje następujące typy harmonogramów:
 - Interwałowy (co X minut)
 - Dzienny (o określonej godzinie)
 - Tygodniowy (w określony dzień tygodnia)

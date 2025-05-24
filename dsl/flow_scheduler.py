@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Moduł do planowania wykonania przepływów w FlowDSL.
+Moduł do planowania wykonania przepływów w taskinity.
 Umożliwia zaplanowanie wykonania przepływów w określonych terminach.
 """
 import os
@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
 
-# Import funkcji z FlowDSL
+# Import funkcji z taskinity
 from flow_dsl import run_flow_from_dsl, load_dsl, parse_dsl
 
 # Opcjonalny import równoległego wykonawcy

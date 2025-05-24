@@ -13,7 +13,7 @@
         "enabled": false,
         "webhook_url": "",
         "channel": "#flow-notifications",
-        "username": "FlowDSL Bot"
+        "username": "taskinity Bot"
     },
     "notification_rules": {
         "on_start": true,

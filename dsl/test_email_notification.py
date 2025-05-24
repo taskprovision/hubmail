@@ -41,7 +41,7 @@ def parse_arguments():
     
     # Opcje dla powiadomień
     parser.add_argument("--subject", type=str, default="Test powiadomienia", help="Temat wiadomości")
-    parser.add_argument("--message", type=str, default="To jest testowa wiadomość z systemu FlowDSL.", help="Treść wiadomości")
+    parser.add_argument("--message", type=str, default="To jest testowa wiadomość z systemu taskinity.", help="Treść wiadomości")
     
     # Opcje dla pipeline'u
     parser.add_argument("--check-interval", type=int, default=10, help="Interwał sprawdzania nowych emaili (w sekundach)")

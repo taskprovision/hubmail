@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Narzędzie do wizualizacji przepływów FlowDSL z wykorzystaniem Mermaid.
+Narzędzie do wizualizacji przepływów taskinity z wykorzystaniem Mermaid.
 """
 import os
 import json
@@ -246,7 +246,7 @@ def generate_ascii_diagram(dsl_text: str) -> str:
 
 def main():
     """Główna funkcja skryptu."""
-    parser = argparse.ArgumentParser(description="Wizualizacja przepływów FlowDSL")
+    parser = argparse.ArgumentParser(description="Wizualizacja przepływów taskinity")
     subparsers = parser.add_subparsers(dest="command", help="Komenda do wykonania")
     
     # Parser dla komendy "dsl"

@@ -4,12 +4,12 @@ services:
   # Serwer SMTP do testowania powiadomień email
   mailhog:
     image: mailhog/mailhog
-    container_name: flowdsl-mailhog
+    container_name: taskinity-mailhog
     ports:
       - "1025:1025"  # SMTP port
       - "8025:8025"  # Web UI port
     networks:
-      - flowdsl-network
+      - taskinity-network
     volumes:
       - mailhog-data:/data
     environment:
@@ -25,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dashboard
-    container_name: flowdsl-dashboard
+    container_name: taskinity-dashboard
     volumes:
       - ./:/app
       - ./logs:/app/logs
@@ -36,12 +36,12 @@ services:
       - SMTP_PORT=1025
       - SMTP_USERNAME=test
       - SMTP_PASSWORD=test
-      - FROM_EMAIL=test@flowdsl.local
+      - FROM_EMAIL=test@taskinity.local
       - RECIPIENTS=info@softreck.dev
     depends_on:
       - mailhog
     networks:
-      - flowdsl-network
+      - taskinity-network
     restart: unless-stopped
     command: python mini_dashboard.py
 
@@ -50,7 +50,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dashboard
-    container_name: flowdsl-scheduler
+    container_name: taskinity-scheduler
     volumes:
       - ./:/app
       - ./logs:/app/logs
@@ -63,13 +63,13 @@ services:
       - SMTP_PORT=1025
       - SMTP_USERNAME=test
       - SMTP_PASSWORD=test
-      - FROM_EMAIL=test@flowdsl.local
+      - FROM_EMAIL=test@taskinity.local
       - RECIPIENTS=info@softreck.dev
     depends_on:
       - mailhog
       - mini-dashboard
     networks:
-      - flowdsl-network
+      - taskinity-network
     restart: unless-stopped
     command: python flow_scheduler.py start
 
@@ -78,7 +78,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dashboard
-    container_name: flowdsl-email-processor
+    container_name: taskinity-email-processor
     volumes:
       - ./:/app
       - ./logs:/app/logs
@@ -90,7 +90,7 @@ services:
       - SMTP_PORT=1025
       - SMTP_USERNAME=test
       - SMTP_PASSWORD=test
-      - FROM_EMAIL=test@flowdsl.local
+      - FROM_EMAIL=test@taskinity.local
       - IMAP_SERVER=mailhog
       - IMAP_PORT=1143
       - IMAP_USERNAME=test
@@ -98,12 +98,12 @@ services:
     depends_on:
       - mailhog
     networks:
-      - flowdsl-network
+      - taskinity-network
     restart: unless-stopped
     command: python email_pipeline.py
 
 networks:
-  flowdsl-network:
+  taskinity-network:
     driver: bridge
 
 volumes:
