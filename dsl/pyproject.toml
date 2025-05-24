@@ -2,15 +2,15 @@
 name = "taskinity"
 version = "0.1.0"
 description = "Inteligentny Framework do Orkiestracji Zadań"
-authors = ["TaskProvision Team <info@taskprovision.com>"]
-license = "MIT"
+authors = ["taskinity Team <info@taskinity.com>"]
+license = "Apache"
 readme = "README.md"
-repository = "https://github.com/taskprovision/taskinity"
+repository = "https://github.com/taskinity/taskinity"
 keywords = ["workflow", "orchestration", "task", "automation", "dsl"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",

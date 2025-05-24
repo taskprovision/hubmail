@@ -69,7 +69,7 @@ pip install taskinity
 poetry add taskinity
 
 # Klonowanie repozytorium (opcjonalnie dla najnowszej wersji rozwojowej)
-git clone https://github.com/taskprovision/taskinity.git
+git clone https://github.com/taskinity/taskinity.git
 cd taskinity
 
 # Uruchomienie przykładu
