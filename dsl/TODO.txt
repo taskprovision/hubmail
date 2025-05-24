@@ -1,0 +1,53 @@
+TODO LIST FOR TASKINITY PROJECT
+
+1. BRANDING UPDATES
+- [x] Update GitHub repository URLs from taskprovision to taskinity
+- [x] Update license information from MIT to Apache
+- [x] Update author information
+- [ ] Update all remaining references to FlowDSL to Taskinity
+- [ ] Update email addresses and contact information
+
+2. DOCUMENTATION
+- [ ] Translate documentation to English
+- [ ] Update README.md with new features and examples
+- [ ] Create separate documentation for core features vs extensions
+- [ ] Add usage instructions for new examples
+- [ ] Add performance comparison metrics
+
+3. PROJECT STRUCTURE
+- [ ] Reorganize project structure for modularity
+- [ ] Create a core module with essential functionality
+- [ ] Move visualization and other extended features to extensions/plugins
+- [ ] Ensure backward compatibility
+
+4. EXAMPLES
+- [x] Create examples directory structure
+- [x] Create email_processing example with Docker configuration
+- [x] Create data_processing example with Docker configuration
+- [x] Create api_integration example with Docker configuration
+- [x] Create visualization example
+- [x] Create parallel_tasks example
+- [ ] Add more complex real-world examples
+- [ ] Add performance comparison metrics for each example
+
+5. ENVIRONMENT CONFIGURATION
+- [x] Create .env.example files for each example
+- [ ] Ensure all examples use environment variables consistently
+- [ ] Add documentation for environment configuration
+
+6. TESTING
+- [ ] Create comprehensive test suite
+- [ ] Add CI/CD configuration
+- [ ] Test all examples in isolated environments
+- [ ] Add performance benchmarks
+
+7. EXTENSIONS/PLUGINS
+- [ ] Create extensions/plugins directory
+- [ ] Implement Mermaid/SVG visualization extension
+- [ ] Implement code converter extension (to convert existing code to Taskinity)
+- [ ] Add extension documentation
+
+8. PACKAGING & DISTRIBUTION
+- [ ] Update package metadata
+- [ ] Prepare for PyPI distribution
+- [ ] Create installation instructions for different scenarios
