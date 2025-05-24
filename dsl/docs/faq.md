@@ -1,0 +1,485 @@
+# Najczęściej Zadawane Pytania (FAQ)
+
+## Spis treści
+
+- [Ogólne pytania](#ogólne-pytania)
+- [Instalacja i konfiguracja](#instalacja-i-konfiguracja)
+- [Definiowanie przepływów](#definiowanie-przepływów)
+- [Uruchamianie przepływów](#uruchamianie-przepływów)
+- [Wizualizacja](#wizualizacja)
+- [Dashboard](#dashboard)
+- [Powiadomienia](#powiadomienia)
+- [Równoległe wykonanie](#równoległe-wykonanie)
+- [Planowanie przepływów](#planowanie-przepływów)
+- [Przetwarzanie email](#przetwarzanie-email)
+- [Rozwiązywanie problemów](#rozwiązywanie-problemów)
+
+## Ogólne pytania
+
+### Czym jest FlowDSL?
+
+FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań za pomocą prostego języka DSL i dekoratorów Python. Jest znacznie prostszy niż Prefect, Airflow czy Luigi i działa natychmiast bez skomplikowanej konfiguracji.
+
+### Jakie są główne zalety FlowDSL?
+
+- **Prostota** - minimalny zestaw funkcji, łatwy do zrozumienia i rozszerzenia
+- **Dekoratory** - intuicyjny sposób definiowania zadań i przepływów
+- **DSL** - prosty język do definiowania połączeń między zadaniami
+- **Brak zależności zewnętrznych** - działa natychmiast, bez skomplikowanej konfiguracji
+- **Lekki monitoring** - automatyczne logowanie i śledzenie wykonania
+- **Wizualizacja** - proste narzędzia do wizualizacji przepływów
+- **Walidacja danych** - możliwość walidacji danych wejściowych i wyjściowych
+
+### Czy FlowDSL jest odpowiedni dla dużych projektów?
+
+FlowDSL jest idealny dla małych i średnich projektów. Dla dużych projektów z setkami zadań i skomplikowaną logiką, warto rozważyć bardziej zaawansowane narzędzia jak Airflow czy Prefect. Jednak nawet w dużych projektach FlowDSL może być używany do prototypowania i szybkiego testowania przepływów.
+
+### Czy FlowDSL jest aktywnie rozwijany?
+
+Tak, FlowDSL jest aktywnie rozwijany. Regularnie dodajemy nowe funkcje i ulepszenia, takie jak równoległe wykonanie, planowanie przepływów i przetwarzanie email.
+
+## Instalacja i konfiguracja
+
+### Jak zainstalować FlowDSL?
+
+FlowDSL nie wymaga skomplikowanej instalacji. Wystarczy sklonować repozytorium i zainstalować zależności:
+
+```bash
+# Klonowanie repozytorium
+git clone https://github.com/taskprovision/hubmail.git
+cd hubmail/dsl
+
+# Instalacja zależności
+pip install -r requirements.txt
+```
+
+### Jakie są wymagania systemowe?
+
+- Python 3.7+
+- Zależności wymienione w `requirements.txt`
+
+### Czy FlowDSL działa na Windows/Linux/macOS?
+
+Tak, FlowDSL działa na wszystkich głównych systemach operacyjnych: Windows, Linux i macOS.
+
+### Czy mogę używać FlowDSL w kontenerach Docker?
+
+Tak, FlowDSL może być łatwo uruchamiany w kontenerach Docker. W repozytorium znajduje się przykładowy plik `Dockerfile.dashboard` i `docker-compose-email.yml`.
+
+## Definiowanie przepływów
+
+### Jak zdefiniować zadanie w FlowDSL?
+
+Zadania definiuje się za pomocą dekoratora `@task`:
+
+```python
+from flow_dsl import task
+
+@task(name="Pobieranie danych", description="Pobiera dane z API")
+def fetch_data(url: str):
+    # Implementacja
+    return data
+```
+
+### Jak zdefiniować przepływ w FlowDSL?
+
+Przepływy definiuje się za pomocą prostego języka DSL:
+
+```python
+flow_dsl = """
+flow DataProcessing:
+    description: "Przetwarzanie danych"
+    fetch_data -> process_data
+    process_data -> save_results
+"""
+```
+
+### Czy mogę łączyć jedno zadanie z wieloma zadaniami?
+
+Tak, możesz łączyć jedno zadanie z wieloma zadaniami:
+
+```python
+flow_dsl = """
+flow DataProcessing:
+    description: "Przetwarzanie danych"
+    fetch_data -> process_data
+    fetch_data -> log_data
+    process_data -> save_results
+"""
+```
+
+### Czy mogę definiować warunki w przepływach?
+
+Obecnie FlowDSL nie obsługuje bezpośrednio warunków w definicji DSL. Możesz jednak implementować logikę warunkową wewnątrz zadań.
+
+## Uruchamianie przepływów
+
+### Jak uruchomić przepływ?
+
+Przepływy uruchamia się za pomocą funkcji `run_flow_from_dsl`:
+
+```python
+from flow_dsl import run_flow_from_dsl
+
+results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
+```
+
+### Jak przekazać dane wejściowe do przepływu?
+
+Dane wejściowe przekazuje się jako drugi argument funkcji `run_flow_from_dsl`:
+
+```python
+results = run_flow_from_dsl(flow_dsl, {
+    "url": "https://example.com/data",
+    "api_key": "your_api_key"
+})
+```
+
+### Jak uzyskać wyniki przepływu?
+
+Wyniki przepływu są zwracane przez funkcję `run_flow_from_dsl`:
+
+```python
+results = run_flow_from_dsl(flow_dsl, input_data)
+print(results)
+```
+
+### Czy mogę uruchomić przepływ z pliku DSL?
+
+Tak, możesz wczytać definicję DSL z pliku:
+
+```python
+from flow_dsl import load_dsl, run_flow_from_dsl
+
+dsl_content = load_dsl("dsl_definitions/my_flow.dsl")
+results = run_flow_from_dsl(dsl_content, input_data)
+```
+
+## Wizualizacja
+
+### Jak wizualizować przepływ?
+
+FlowDSL zawiera narzędzia do wizualizacji przepływów:
+
+```python
+from flow_visualizer import visualize_dsl
+
+visualize_dsl(flow_dsl, output_file="flow_diagram.png")
+```
+
+### Jakie formaty wizualizacji są obsługiwane?
+
+FlowDSL obsługuje wizualizację w formatach PNG, SVG i Mermaid.
+
+### Czy mogę wizualizować historię wykonania przepływu?
+
+Tak, możesz wizualizować historię wykonania przepływu:
+
+```python
+from flow_visualizer import visualize_flow
+
+visualize_flow(flow_id, output_file="execution_diagram.png")
+```
+
+### Jak wizualizować przepływy w dashboardzie?
+
+Dashboard automatycznie wizualizuje przepływy. Wystarczy uruchomić dashboard i przejść do zakładki "Wizualizacja".
+
+## Dashboard
+
+### Jak uruchomić dashboard?
+
+FlowDSL zawiera dwa dashboardy:
+
+1. **Mini Dashboard**:
+```bash
+python mini_dashboard.py
+```
+
+2. **Pełny Dashboard**:
+```bash
+python simple_dashboard.py
+```
+
+### Jakie funkcje oferuje dashboard?
+
+- Przeglądanie definicji DSL
+- Uruchamianie przepływów
+- Przeglądanie historii wykonania
+- Wizualizacja przepływów
+- Przeglądanie logów
+- Konfiguracja powiadomień
+- Zarządzanie harmonogramami
+
+### Na jakim porcie działa dashboard?
+
+Mini Dashboard działa domyślnie na porcie 8765, a Pełny Dashboard na porcie 8000.
+
+### Czy mogę zmienić port dashboardu?
+
+Tak, możesz zmienić port dashboardu, edytując odpowiedni plik:
+
+```python
+# mini_dashboard.py
+app.run(host="0.0.0.0", port=8765)  # Zmień port na wybrany
+```
+
+## Powiadomienia
+
+### Jak skonfigurować powiadomienia email?
+
+Powiadomienia email konfiguruje się w pliku `config/notification_config.json`:
+
+```json
+{
+    "enabled": true,
+    "email": {
+        "enabled": true,
+        "smtp_server": "smtp.example.com",
+        "smtp_port": 587,
+        "username": "user@example.com",
+        "password": "password123",
+        "from_email": "flowdsl@example.com",
+        "recipients": ["admin@example.com"]
+    }
+}
+```
+
+### Jak skonfigurować powiadomienia Slack?
+
+Powiadomienia Slack konfiguruje się w pliku `config/notification_config.json`:
+
+```json
+{
+    "enabled": true,
+    "slack": {
+        "enabled": true,
+        "webhook_url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+        "channel": "#flow-notifications",
+        "username": "FlowDSL Bot"
+    }
+}
+```
+
+### Kiedy są wysyłane powiadomienia?
+
+Powiadomienia są wysyłane w zależności od konfiguracji w sekcji `notification_rules`:
+
+```json
+{
+    "notification_rules": {
+        "on_start": true,
+        "on_complete": true,
+        "on_error": true,
+        "include_details": true
+    }
+}
+```
+
+### Jak wysłać powiadomienie ręcznie?
+
+Możesz wysłać powiadomienie ręcznie za pomocą funkcji `send_email_notification` i `send_slack_notification`:
+
+```python
+from notification_service import send_email_notification, send_slack_notification
+
+send_email_notification("Temat", "Treść wiadomości")
+send_slack_notification("Tytuł", "Treść wiadomości")
+```
+
+## Równoległe wykonanie
+
+### Jak uruchomić przepływ z równoległym wykonaniem?
+
+Przepływy z równoległym wykonaniem uruchamia się za pomocą funkcji `run_parallel_flow_from_dsl`:
+
+```python
+from parallel_executor import run_parallel_flow_from_dsl
+
+results = run_parallel_flow_from_dsl(flow_dsl, input_data)
+```
+
+### Jakie są ograniczenia równoległego wykonania?
+
+Równoległe wykonanie ma następujące ograniczenia:
+- Zadania muszą być niezależne od siebie
+- Zadania nie mogą modyfikować tych samych danych
+- Zadania muszą być bezpieczne wątkowo
+
+### Jak kontrolować liczbę równoległych zadań?
+
+Możesz kontrolować liczbę równoległych zadań za pomocą parametru `max_workers`:
+
+```python
+results = run_parallel_flow_from_dsl(flow_dsl, input_data, max_workers=4)
+```
+
+### Czy równoległe wykonanie jest szybsze?
+
+Równoległe wykonanie jest szybsze dla przepływów z niezależnymi zadaniami, które mogą być wykonywane jednocześnie. Dla przepływów sekwencyjnych nie ma różnicy w wydajności.
+
+## Planowanie przepływów
+
+### Jak zaplanować wykonanie przepływu?
+
+Przepływy planuje się za pomocą modułu `flow_scheduler`:
+
+```python
+from flow_scheduler import Scheduler
+
+scheduler = Scheduler()
+scheduler.add_schedule("dsl_definitions/my_flow.dsl", interval=60)
+scheduler.start()
+```
+
+### Jakie typy harmonogramów są obsługiwane?
+
+FlowDSL obsługuje następujące typy harmonogramów:
+- Interwałowy (co X minut)
+- Dzienny (o określonej godzinie)
+- Tygodniowy (w określony dzień tygodnia)
+- Miesięczny (w określony dzień miesiąca)
+
+### Jak zarządzać harmonogramami z linii poleceń?
+
+Możesz zarządzać harmonogramami za pomocą linii poleceń:
+
+```bash
+# Uruchomienie planera
+python flow_scheduler.py start
+
+# Utworzenie harmonogramu (co 60 minut)
+python flow_scheduler.py create dsl_definitions/my_flow.dsl 60
+
+# Lista harmonogramów
+python flow_scheduler.py list
+
+# Ręczne uruchomienie harmonogramu
+python flow_scheduler.py run [schedule_id]
+
+# Usunięcie harmonogramu
+python flow_scheduler.py delete [schedule_id]
+```
+
+### Czy mogę przekazać dane wejściowe do zaplanowanego przepływu?
+
+Tak, możesz przekazać dane wejściowe do zaplanowanego przepływu:
+
+```python
+scheduler.add_schedule(
+    "dsl_definitions/my_flow.dsl",
+    interval=60,
+    input_data={"url": "https://example.com/data"}
+)
+```
+
+## Przetwarzanie email
+
+### Jak skonfigurować przetwarzanie email?
+
+Przetwarzanie email konfiguruje się w pliku `config/email_config.json`:
+
+```json
+{
+    "imap": {
+        "server": "imap.example.com",
+        "port": 993,
+        "username": "user@example.com",
+        "password": "password123",
+        "folder": "INBOX",
+        "ssl": true
+    },
+    "smtp": {
+        "server": "smtp.example.com",
+        "port": 587,
+        "username": "user@example.com",
+        "password": "password123",
+        "from_email": "user@example.com",
+        "use_tls": true
+    }
+}
+```
+
+### Jak uruchomić przetwarzanie email?
+
+Przetwarzanie email uruchamia się za pomocą modułu `email_pipeline`:
+
+```python
+from email_pipeline import EmailProcessor
+
+processor = EmailProcessor()
+processor.process_emails()
+```
+
+### Jak skonfigurować automatyczne odpowiedzi?
+
+Automatyczne odpowiedzi konfiguruje się w sekcji `auto_reply` pliku `config/email_config.json`:
+
+```json
+{
+    "auto_reply": {
+        "enabled": true,
+        "criteria": {
+            "subject_contains": ["pytanie", "zapytanie", "pomoc", "wsparcie"],
+            "from_domains": ["example.com", "gmail.com"],
+            "priority_keywords": ["pilne", "ważne", "urgent", "asap"]
+        },
+        "templates": {
+            "default": "Dziękujemy za wiadomość. Odpowiemy najszybciej jak to możliwe.",
+            "priority": "Dziękujemy za pilną wiadomość. Zajmiemy się nią priorytetowo.",
+            "support": "Dziękujemy za zgłoszenie. Nasz zespół wsparcia skontaktuje się z Tobą wkrótce."
+        }
+    }
+}
+```
+
+### Jak uruchomić przepływ na podstawie emaila?
+
+Uruchamianie przepływów na podstawie emaili konfiguruje się w sekcji `flows` pliku `config/email_config.json`:
+
+```json
+{
+    "flows": {
+        "trigger_flow_on_email": true,
+        "flow_mapping": {
+            "support": "support_flow.dsl",
+            "order": "order_processing.dsl",
+            "complaint": "complaint_handling.dsl"
+        }
+    }
+}
+```
+
+## Rozwiązywanie problemów
+
+### Jak rozwiązać problem z parsowaniem DSL?
+
+Sprawdź składnię DSL, zwracając uwagę na:
+- Wcięcia i spacje
+- Poprawność nazw zadań
+- Poprawność połączeń między zadaniami
+
+### Jak rozwiązać problem z uruchamianiem przepływów?
+
+Sprawdź:
+- Czy wszystkie zadania są poprawnie zdefiniowane
+- Czy dane wejściowe są poprawne
+- Czy nie ma błędów w implementacji zadań
+
+### Jak rozwiązać problem z powiadomieniami?
+
+Sprawdź:
+- Konfigurację SMTP/Slack
+- Czy powiadomienia są włączone
+- Logi serwisu powiadomień
+
+### Gdzie znaleźć logi?
+
+Logi znajdują się w katalogu `logs/`:
+- `flow_dsl.log` - logi głównego modułu
+- `mini_dashboard.log` - logi mini dashboardu
+- `simple_dashboard.log` - logi pełnego dashboardu
+- `notification_service.log` - logi serwisu powiadomień
+- `parallel_executor.log` - logi równoległego wykonawcy
+- `flow_scheduler.log` - logi planera
+- `email_pipeline.log` - logi procesora email

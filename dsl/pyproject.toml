@@ -1,0 +1,83 @@
+[tool.poetry]
+name = "taskinity"
+version = "0.1.0"
+description = "Inteligentny Framework do Orkiestracji Zadań"
+authors = ["TaskProvision Team <info@taskprovision.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/taskprovision/taskinity"
+keywords = ["workflow", "orchestration", "task", "automation", "dsl"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+packages = [
+    { include = "taskinity" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pandas = "^2.0.0"
+loguru = "^0.7.0"
+pydantic = "^2.0.0"
+requests = "^2.28.0"
+nltk = { version = "^3.8.0", optional = true }
+streamlit = { version = "^1.22.0", optional = true }
+fastapi = { version = "^0.95.0", optional = true }
+uvicorn = { version = "^0.22.0", optional = true }
+sqlalchemy = { version = "^2.0.0", optional = true }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+pytest-cov = "^4.1.0"
+black = "^23.3.0"
+isort = "^5.12.0"
+mypy = "^1.3.0"
+flake8 = "^6.0.0"
+pre-commit = "^3.3.2"
+tox = "^4.6.0"
+sphinx = "^7.0.0"
+sphinx-rtd-theme = "^1.2.1"
+
+[tool.poetry.extras]
+nlp = ["nltk"]
+web = ["streamlit", "fastapi", "uvicorn"]
+db = ["sqlalchemy"]
+all = ["nltk", "streamlit", "fastapi", "uvicorn", "sqlalchemy"]
+
+[tool.poetry.scripts]
+taskinity = "taskinity.cli:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310", "py311"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+addopts = "--cov=taskinity --cov-report=term-missing --cov-report=xml:coverage.xml"

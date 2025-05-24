@@ -1,0 +1,317 @@
+# Samouczek FlowDSL
+
+## Spis treści
+
+- [Wprowadzenie](#wprowadzenie)
+- [Krok 1: Instalacja](#krok-1-instalacja)
+- [Krok 2: Tworzenie pierwszego zadania](#krok-2-tworzenie-pierwszego-zadania)
+- [Krok 3: Definiowanie przepływu](#krok-3-definiowanie-przepływu)
+- [Krok 4: Uruchamianie przepływu](#krok-4-uruchamianie-przepływu)
+- [Krok 5: Wizualizacja przepływu](#krok-5-wizualizacja-przepływu)
+- [Krok 6: Monitorowanie i logi](#krok-6-monitorowanie-i-logi)
+- [Krok 7: Korzystanie z dashboardu](#krok-7-korzystanie-z-dashboardu)
+- [Krok 8: Konfiguracja powiadomień](#krok-8-konfiguracja-powiadomień)
+- [Krok 9: Równoległe wykonanie](#krok-9-równoległe-wykonanie)
+- [Krok 10: Planowanie przepływów](#krok-10-planowanie-przepływów)
+- [Następne kroki](#następne-kroki)
+
+## Wprowadzenie
+
+FlowDSL to lekki framework do definiowania i uruchamiania przepływów zadań. W tym samouczku przeprowadzimy Cię krok po kroku przez proces tworzenia, uruchamiania i zarządzania przepływami zadań za pomocą FlowDSL.
+
+## Krok 1: Instalacja
+
+FlowDSL nie wymaga skomplikowanej instalacji. Wystarczy sklonować repozytorium i zainstalować zależności:
+
+```bash
+# Klonowanie repozytorium
+git clone https://github.com/taskprovision/hubmail.git
+cd hubmail/dsl
+
+# Instalacja zależności
+pip install -r requirements.txt
+```
+
+## Krok 2: Tworzenie pierwszego zadania
+
+Zadania w FlowDSL definiuje się za pomocą dekoratora `@task`. Utwórz plik `my_flow.py` i dodaj do niego pierwsze zadanie:
+
+```python
+from flow_dsl import task
+
+@task(name="Pobieranie danych", description="Pobiera dane z API")
+def fetch_data(url: str):
+    print(f"Pobieranie danych z {url}")
+    # W rzeczywistej aplikacji tutaj byłby kod do pobierania danych
+    return {"data": [1, 2, 3, 4, 5]}
+
+@task(name="Przetwarzanie danych", description="Przetwarza pobrane dane")
+def process_data(data):
+    print(f"Przetwarzanie danych: {data}")
+    # W rzeczywistej aplikacji tutaj byłby kod do przetwarzania danych
+    processed_data = [x * 2 for x in data["data"]]
+    return {"processed_data": processed_data}
+
+@task(name="Zapisywanie wyników", description="Zapisuje przetworzone dane")
+def save_results(processed_data):
+    print(f"Zapisywanie wyników: {processed_data}")
+    # W rzeczywistej aplikacji tutaj byłby kod do zapisywania danych
+    return {"status": "success", "count": len(processed_data["processed_data"])}
+```
+
+## Krok 3: Definiowanie przepływu
+
+Teraz zdefiniujmy przepływ, który połączy nasze zadania. Dodaj do pliku `my_flow.py`:
+
+```python
+# Definicja przepływu DSL
+flow_dsl = """
+flow DataProcessing:
+    description: "Przetwarzanie danych"
+    fetch_data -> process_data
+    process_data -> save_results
+"""
+```
+
+Przepływ `DataProcessing` składa się z trzech zadań:
+1. `fetch_data` - pobiera dane
+2. `process_data` - przetwarza dane
+3. `save_results` - zapisuje wyniki
+
+Zadania są połączone w sekwencję: `fetch_data -> process_data -> save_results`.
+
+## Krok 4: Uruchamianie przepływu
+
+Teraz uruchomimy nasz przepływ. Dodaj do pliku `my_flow.py`:
+
+```python
+from flow_dsl import run_flow_from_dsl
+
+if __name__ == "__main__":
+    # Uruchomienie przepływu
+    results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
+    
+    # Wyświetlenie wyników
+    print("\nWyniki przepływu:")
+    print(results)
+```
+
+Uruchom plik:
+
+```bash
+python my_flow.py
+```
+
+Powinieneś zobaczyć wyniki wykonania przepływu:
+
+```
+Pobieranie danych z https://example.com/data
+Przetwarzanie danych: {'data': [1, 2, 3, 4, 5]}
+Zapisywanie wyników: {'processed_data': [2, 4, 6, 8, 10]}
+
+Wyniki przepływu:
+{'fetch_data': {'data': [1, 2, 3, 4, 5]}, 'process_data': {'processed_data': [2, 4, 6, 8, 10]}, 'save_results': {'status': 'success', 'count': 5}}
+```
+
+## Krok 5: Wizualizacja przepływu
+
+FlowDSL umożliwia wizualizację przepływów. Dodaj do pliku `my_flow.py`:
+
+```python
+from flow_visualizer import visualize_dsl
+
+if __name__ == "__main__":
+    # Uruchomienie przepływu
+    results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
+    
+    # Wyświetlenie wyników
+    print("\nWyniki przepływu:")
+    print(results)
+    
+    # Wizualizacja przepływu
+    visualize_dsl(flow_dsl, output_file="my_flow.png")
+    print("\nWizualizacja przepływu zapisana do pliku my_flow.png")
+```
+
+Uruchom plik:
+
+```bash
+python my_flow.py
+```
+
+Powinieneś zobaczyć komunikat o zapisaniu wizualizacji do pliku `my_flow.png`. Otwórz ten plik, aby zobaczyć diagram przepływu.
+
+## Krok 6: Monitorowanie i logi
+
+FlowDSL automatycznie zapisuje logi wykonania przepływów. Sprawdźmy, jak możemy je przeglądać:
+
+```python
+import json
+from pathlib import Path
+
+def view_flow_logs(flow_id):
+    flow_file = Path("flows") / f"{flow_id}.json"
+    if not flow_file.exists():
+        print(f"Nie znaleziono przepływu o ID: {flow_id}")
+        return
+    
+    with open(flow_file, "r") as f:
+        flow_data = json.load(f)
+    
+    print(f"Przepływ: {flow_data['name']}")
+    print(f"Status: {flow_data['status']}")
+    print(f"Czas rozpoczęcia: {flow_data['start_time']}")
+    print(f"Czas zakończenia: {flow_data['end_time']}")
+    print("\nZadania:")
+    
+    for task_id, task_data in flow_data["tasks"].items():
+        print(f"  - {task_id}: {task_data['status']}")
+        if task_data.get("error"):
+            print(f"    Błąd: {task_data['error']}")
+
+if __name__ == "__main__":
+    # Uruchomienie przepływu
+    results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
+    
+    # Wyświetlenie ID przepływu
+    flow_id = results.get("_flow_id")
+    print(f"\nID przepływu: {flow_id}")
+    
+    # Przeglądanie logów przepływu
+    print("\nLogi przepływu:")
+    view_flow_logs(flow_id)
+```
+
+## Krok 7: Korzystanie z dashboardu
+
+FlowDSL zawiera dashboard do zarządzania przepływami. Uruchom mini dashboard:
+
+```bash
+python mini_dashboard.py
+```
+
+Dashboard będzie dostępny pod adresem http://localhost:8765. Możesz:
+- Przeglądać definicje DSL
+- Uruchamiać przepływy
+- Przeglądać historię wykonania
+- Wizualizować przepływy
+- Przeglądać logi
+
+## Krok 8: Konfiguracja powiadomień
+
+FlowDSL umożliwia wysyłanie powiadomień o statusie przepływów. Skonfigurujmy powiadomienia email:
+
+```python
+from notification_service import load_config, save_config, send_email_notification
+
+# Załadowanie konfiguracji
+config = load_config()
+
+# Konfiguracja powiadomień email
+config["enabled"] = True
+config["email"]["enabled"] = True
+config["email"]["smtp_server"] = "smtp.example.com"
+config["email"]["smtp_port"] = 587
+config["email"]["username"] = "user@example.com"
+config["email"]["password"] = "password123"
+config["email"]["from_email"] = "flowdsl@example.com"
+config["email"]["recipients"] = ["admin@example.com"]
+
+# Zapisanie konfiguracji
+save_config(config)
+
+# Wysłanie testowego powiadomienia
+send_email_notification("Test powiadomień FlowDSL", "To jest testowe powiadomienie z FlowDSL.")
+```
+
+## Krok 9: Równoległe wykonanie
+
+FlowDSL umożliwia równoległe wykonanie niezależnych zadań. Zmodyfikujmy nasz przepływ, aby wykorzystać równoległe wykonanie:
+
+```python
+from flow_dsl import task
+from parallel_executor import run_parallel_flow_from_dsl
+
+@task(name="Pobieranie danych A", description="Pobiera dane z API A")
+def fetch_data_a(url: str):
+    print(f"Pobieranie danych A z {url}/a")
+    return {"data_a": [1, 2, 3]}
+
+@task(name="Pobieranie danych B", description="Pobiera dane z API B")
+def fetch_data_b(url: str):
+    print(f"Pobieranie danych B z {url}/b")
+    return {"data_b": [4, 5, 6]}
+
+@task(name="Łączenie danych", description="Łączy dane z różnych źródeł")
+def merge_data(data_a, data_b):
+    print(f"Łączenie danych: {data_a} i {data_b}")
+    merged_data = data_a["data_a"] + data_b["data_b"]
+    return {"merged_data": merged_data}
+
+# Definicja przepływu DSL z równoległym wykonaniem
+parallel_flow_dsl = """
+flow ParallelDataProcessing:
+    description: "Równoległe przetwarzanie danych"
+    fetch_data_a -> merge_data
+    fetch_data_b -> merge_data
+"""
+
+if __name__ == "__main__":
+    # Uruchomienie przepływu z równoległym wykonaniem
+    results = run_parallel_flow_from_dsl(parallel_flow_dsl, {"url": "https://example.com"})
+    
+    # Wyświetlenie wyników
+    print("\nWyniki przepływu równoległego:")
+    print(results)
+```
+
+## Krok 10: Planowanie przepływów
+
+FlowDSL pozwala na planowanie automatycznego wykonania przepływów. Utwórzmy harmonogram dla naszego przepływu:
+
+```python
+from flow_scheduler import Scheduler
+
+# Zapisanie definicji DSL do pliku
+with open("dsl_definitions/data_processing.dsl", "w") as f:
+    f.write(flow_dsl)
+
+# Utworzenie planera
+scheduler = Scheduler()
+
+# Dodanie harmonogramu (co 60 minut)
+scheduler.add_schedule("dsl_definitions/data_processing.dsl", interval=60)
+
+# Uruchomienie planera
+scheduler.start()
+```
+
+Możesz również zarządzać harmonogramami za pomocą linii poleceń:
+
+```bash
+# Uruchomienie planera
+python flow_scheduler.py start
+
+# Utworzenie harmonogramu (co 60 minut)
+python flow_scheduler.py create dsl_definitions/data_processing.dsl 60
+
+# Lista harmonogramów
+python flow_scheduler.py list
+
+# Ręczne uruchomienie harmonogramu
+python flow_scheduler.py run [schedule_id]
+
+# Usunięcie harmonogramu
+python flow_scheduler.py delete [schedule_id]
+```
+
+## Następne kroki
+
+Gratulacje! Przeszedłeś przez podstawowe funkcje FlowDSL. Oto kilka pomysłów na dalsze kroki:
+
+1. **Zaawansowane przepływy** - twórz bardziej złożone przepływy z warunkami i pętlami
+2. **Integracja z innymi systemami** - integruj FlowDSL z bazami danych, API i innymi systemami
+3. **Rozszerzanie funkcjonalności** - dodawaj własne funkcje i moduły do FlowDSL
+4. **Automatyzacja procesów** - automatyzuj powtarzalne procesy za pomocą FlowDSL
+
+Więcej informacji znajdziesz w [dokumentacji technicznej](./dokumentacja.md) i [przykładach](./przyklady.md).
