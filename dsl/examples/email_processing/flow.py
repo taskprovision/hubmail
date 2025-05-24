@@ -5,11 +5,54 @@ This file ties together all the email processing tasks.
 """
 import os
 import json
+import sys
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Import Taskinity core functionality
-from taskinity.core.taskinity_core import run_flow_from_dsl, save_dsl, load_dsl
+# Check if running in mock mode from command line
+if '--mock' in sys.argv:
+    # Create mock modules
+    class MockTaskinityCore:
+        @staticmethod
+        def run_flow_from_dsl(flow_dsl, input_data):
+            print(f"Running mock flow with {len(input_data)} input parameters")
+            return {
+                "status": "success",
+                "processed_emails": 5,
+                "send_responses": {
+                    "total_attempted": 5,
+                    "total_sent": 5,
+                    "sent_urgent": 1,
+                    "sent_attachments": 2,
+                    "sent_support": 0,
+                    "sent_orders": 0,
+                    "sent_regular": 2
+                }
+            }
+        
+        @staticmethod
+        def save_dsl(dsl_text, filename):
+            dsl_dir = Path("dsl_definitions")
+            dsl_dir.mkdir(exist_ok=True)
+            with open(dsl_dir / filename, 'w') as f:
+                f.write(dsl_text)
+            return True
+        
+        @staticmethod
+        def load_dsl(filename):
+            return "flow EmailProcessing: mock flow"
+    
+    # Use mock modules
+    run_flow_from_dsl = MockTaskinityCore.run_flow_from_dsl
+    save_dsl = MockTaskinityCore.save_dsl
+    load_dsl = MockTaskinityCore.load_dsl
+else:
+    # Import real Taskinity core functionality
+    try:
+        from taskinity.core.taskinity_core import run_flow_from_dsl, save_dsl, load_dsl
+    except ImportError:
+        print("Error: Could not import Taskinity modules. Run with --mock flag for testing.")
+        sys.exit(1)
 
 # Import tasks
 from tasks import (

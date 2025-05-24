@@ -247,95 +247,13 @@ parallel-run:
 
 ## Run basic flow example
 example-basic:
-	@echo -e "Uruchamianie podstawowego przykładu przepływu..."
-	mkdir -p examples
-	cat > examples/basic_flow.py << 'EOL'
-from flow_dsl import task, run_flow_from_dsl
-
-@task(name="Zadanie 1")
-def task1(input_data):
-	print("Wykonuję zadanie 1")
-	return {"result": input_data + " - przetworzony przez zadanie 1"}
-
-@task(name="Zadanie 2")
-def task2(input_data):
-	print("Wykonuję zadanie 2")
-	return {"result": input_data["result"] + " - przetworzony przez zadanie 2"}
-
-@task(name="Zadanie 3")
-def task3(input_data):
-	print("Wykonuję zadanie 3")
-	return {"result": input_data["result"] + " - przetworzony przez zadanie 3"}
-
-# Definicja przepływu DSL
-flow_dsl = """
-flow SimpleFlow:
-	description: "Prosty przepływ sekwencyjny"
-	task1 -> task2
-	task2 -> task3
-"""
-
-# Uruchomienie przepływu
-results = run_flow_from_dsl(flow_dsl, "Dane wejściowe")
-print("\nWyniki przepływu:")
-print(results)
-EOL
-	python examples/basic_flow.py
+	@echo -e "Running basic flow example..."
+	python examples/basic_flow.py --mock
 
 ## Run email processing example
 example-email:
-	@echo -e "Uruchamianie przykładu przetwarzania emaili..."
-	mkdir -p examples
-	cat > examples/email_flow.py << 'EOL'
-from flow_dsl import task, run_flow_from_dsl
-
-@task(name="Pobieranie emaili")
-def fetch_emails(server, username, password):
-	print(f"Pobieranie emaili z {server} jako {username}")
-	# Symulacja pobierania emaili
-	emails = [
-	    {"id": "1", "subject": "Pytanie o wsparcie", "urgent": True},
-	    {"id": "2", "subject": "Newsletter", "urgent": False},
-	    {"id": "3", "subject": "Pilna sprawa", "urgent": True}
-	]
-	return emails
-
-@task(name="Klasyfikacja emaili")
-def classify_emails(emails):
-	print(f"Klasyfikacja {len(emails)} emaili")
-	urgent = [email for email in emails if email.get("urgent", False)]
-	regular = [email for email in emails if not email.get("urgent", False)]
-	return {"urgent_emails": urgent, "regular_emails": regular}
-
-@task(name="Przetwarzanie pilnych emaili")
-def process_urgent_emails(urgent_emails):
-	print(f"Przetwarzanie {len(urgent_emails)} pilnych emaili")
-	return [f"Odpowiedź na pilny email {email['id']}" for email in urgent_emails]
-
-@task(name="Przetwarzanie zwykłych emaili")
-def process_regular_emails(regular_emails):
-	print(f"Przetwarzanie {len(regular_emails)} zwykłych emaili")
-	return [f"Odpowiedź na zwykły email {email['id']}" for email in regular_emails]
-
-# Definicja przepływu DSL
-email_dsl = """
-flow EmailProcessing:
-	description: "Przetwarzanie e-maili"
-	fetch_emails -> classify_emails
-	classify_emails -> process_urgent_emails
-	classify_emails -> process_regular_emails
-"""
-
-# Uruchomienie przepływu
-results = run_flow_from_dsl(email_dsl, {
-	"server": "imap.example.com",
-	"username": "info@example.com",
-	"password": "password123"
-})
-print("\nWyniki przepływu:")
-print(results)
-EOL
-	python examples/email_flow.py
+	@echo -e "Running email processing example..."
+	python examples/email_flow.py --mock
 
 ## Run data processing example
 example-data:
@@ -350,69 +268,70 @@ id,name,value
 5,Product B,250
 EOL
 	cat > examples/data_flow.py << 'EOL'
-from flow_dsl import task, run_flow_from_dsl
-import pandas as pd
-import os
+	from taskinity.core.taskinity_core import task, run_flow_from_dsl
+	import pandas as pd
+	import os
 
-@task(name="Wczytanie CSV")
-def load_csv(file_path):
-	print(f"Wczytywanie danych z {file_path}")
-	df = pd.read_csv(file_path)
-	return {"dataframe": df}
+	@task(name="Wczytanie CSV")
+	def load_csv(file_path):
+		print(f"Wczytywanie danych z {file_path}")
+		df = pd.read_csv(file_path)
+		return {"dataframe": df}
 
-@task(name="Czyszczenie danych")
-def clean_data(input_data):
-	df = input_data["dataframe"]
-	print(f"Czyszczenie danych, początkowy rozmiar: {len(df)}")
-	# Usunięcie duplikatów
-	df = df.drop_duplicates()
-	print(f"Rozmiar po usunięciu duplikatów: {len(df)}")
-	return {"dataframe": df}
+	@task(name="Czyszczenie danych")
+	def clean_data(input_data):
+		df = input_data["dataframe"]
+		print(f"Czyszczenie danych, początkowy rozmiar: {len(df)}")
+		# Usunięcie duplikatów
+		df = df.drop_duplicates()
+		print(f"Rozmiar po czyszczeniu: {len(df)}")
+		return {"dataframe": df}
 
-@task(name="Transformacja danych")
-def transform_data(input_data):
-	df = input_data["dataframe"]
-	print(f"Transformacja danych")
-	# Przykładowa transformacja - konwersja kolumny na wielkie litery
-	if "name" in df.columns:
-	    df["name"] = df["name"].str.upper()
-	# Dodanie nowej kolumny
-	df["tax"] = df["value"] * 0.23
-	return {"dataframe": df}
+	@task(name="Transformacja danych")
+	def transform_data(input_data):
+		df = input_data["dataframe"]
+		print(f"Transformacja danych")
+		# Grupowanie po nazwie produktu
+		grouped = df.groupby('name').agg({'value': ['sum', 'mean', 'count']})
+		grouped.columns = ['total_value', 'avg_value', 'count']
+		grouped = grouped.reset_index()
+		return {"dataframe": grouped}
 
-@task(name="Zapisanie wyników")
-def save_results(input_data, output_path):
-	df = input_data["dataframe"]
-	print(f"Zapisywanie wyników do {output_path}")
-	df.to_csv(output_path, index=False)
-	return {"rows_count": len(df), "output_path": output_path}
+	@task(name="Zapisanie wyników")
+	def save_results(input_data, output_path):
+		df = input_data["dataframe"]
+		print(f"Zapisywanie wyników do {output_path}")
+		df.to_csv(output_path, index=False)
+		return {"rows": len(df), "columns": len(df.columns), "path": output_path}
 
-# Definicja przepływu DSL
-flow_dsl = """
-flow CSVProcessing:
-	description: "Przetwarzanie pliku CSV"
-	load_csv -> clean_data
-	clean_data -> transform_data
-	transform_data -> save_results
-"""
+	flow_dsl = """
+	flow DataProcessing:
+		description: "Przepływ przetwarzania danych CSV"
+		load_csv -> clean_data
+		clean_data -> transform_data
+		transform_data -> save_results
+	"""
 
-# Upewnienie się, że katalog wyjściowy istnieje
-os.makedirs("examples/data/output", exist_ok=True)
+	# Upewnienie się, że katalog wyjściowy istnieje
+	os.makedirs("examples/data/output", exist_ok=True)
 
-# Uruchomienie przepływu
-results = run_flow_from_dsl(flow_dsl, {
-	"file_path": "examples/data/sample.csv",
-	"output_path": "examples/data/output/processed.csv"
-})
-print("\nWyniki przepływu:")
-print(results)
+	# Uruchomienie przepływu
+	results = run_flow_from_dsl(flow_dsl, {
+		"file_path": "examples/data/sample.csv",
+		"output_path": "examples/data/output/processed.csv"
+	})
+	print("\nWyniki przepływu:")
+	print(f"Przetworzone rekordy: {results['save_results']['rows']}")
+	print(f"Zapisany plik: {results['save_results']['path']}")
+	print(results)
 
-# Wyświetlenie przetworzonego pliku
-print("\nZawartość przetworzonego pliku:")
-processed_df = pd.read_csv("examples/data/output/processed.csv")
-print(processed_df)
+	# Wyświetlenie przetworzonego pliku
+	print("\nZawartość przetworzonego pliku:")
+	processed_df = pd.read_csv("examples/data/output/processed.csv")
+	print(processed_df)
 EOL
-	python examples/data_flow.py
+	python examples/data_flow.py --mock
+
 
 ## Run API integration example
 example-api:

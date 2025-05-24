@@ -78,6 +78,10 @@ docker-down-all: email-docker-down
 .PHONY: email-test
 email-test:
 	@echo "Running email processing tests..."
+	@if [ ! -d "email_processing/tests" ]; then \
+		echo "Creating tests directory in email_processing..."; \
+		mkdir -p email_processing/tests; \
+	fi
 	$(EXPORT_PYTHONPATH) && cd email_processing && $(PYTHON) -m pytest tests/
 
 .PHONY: email-run
@@ -109,6 +113,10 @@ email-docker-down:
 .PHONY: data-test
 data-test:
 	@echo "Running data processing tests..."
+	@if [ ! -d "data_processing/tests" ]; then \
+		echo "Creating tests directory in data_processing..."; \
+		mkdir -p data_processing/tests; \
+	fi
 	$(EXPORT_PYTHONPATH) && cd data_processing && $(PYTHON) -m pytest tests/
 
 .PHONY: data-run
@@ -120,6 +128,10 @@ data-run:
 .PHONY: api-test
 api-test:
 	@echo "Running API integration tests..."
+	@if [ ! -d "api_integration/tests" ]; then \
+		echo "Creating tests directory in api_integration..."; \
+		mkdir -p api_integration/tests; \
+	fi
 	$(EXPORT_PYTHONPATH) && cd api_integration && $(PYTHON) -m pytest tests/
 
 .PHONY: api-run
@@ -131,6 +143,10 @@ api-run:
 .PHONY: parallel-test
 parallel-test:
 	@echo "Running parallel tasks tests..."
+	@if [ ! -d "parallel_tasks/tests" ]; then \
+		echo "Creating tests directory in parallel_tasks..."; \
+		mkdir -p parallel_tasks/tests; \
+	fi
 	$(EXPORT_PYTHONPATH) && cd parallel_tasks && $(PYTHON) -m pytest tests/
 
 .PHONY: parallel-run
@@ -142,6 +158,10 @@ parallel-run:
 .PHONY: viz-test
 viz-test:
 	@echo "Running visualization tests..."
+	@if [ ! -d "visualization/tests" ]; then \
+		echo "Creating tests directory in visualization..."; \
+		mkdir -p visualization/tests; \
+	fi
 	$(EXPORT_PYTHONPATH) && cd visualization && $(PYTHON) -m pytest tests/
 
 .PHONY: viz-run
@@ -153,6 +173,10 @@ viz-run:
 .PHONY: perf-test
 perf-test:
 	@echo "Running performance benchmark tests..."
+	@if [ ! -d "performance_benchmarks/tests" ]; then \
+		echo "Creating tests directory in performance_benchmarks..."; \
+		mkdir -p performance_benchmarks/tests; \
+	fi
 	$(EXPORT_PYTHONPATH) && cd performance_benchmarks && $(PYTHON) -m pytest tests/
 
 .PHONY: perf-run
