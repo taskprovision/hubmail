@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Serwer SMTP do testowania powiadomień email
+  mailhog:
+    image: mailhog/mailhog
+    container_name: taskinity-mailhog
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    networks:
+      - taskinity-network
+    volumes:
+      - mailhog-data:/data
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1025"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mini-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: taskinity-dashboard
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+      - ./dsl_definitions:/app/dsl_definitions
+      - ./config:/app/config
+    environment:
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=test
+      - SMTP_PASSWORD=test
+      - FROM_EMAIL=test@taskinity.local
+      - RECIPIENTS=info@softreck.dev
+    depends_on:
+      - mailhog
+    networks:
+      - taskinity-network
+    restart: unless-stopped
+    command: python mini_dashboard.py
+
+  # Planer zadań
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: taskinity-scheduler
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+      - ./flows:/app/flows
+      - ./dsl_definitions:/app/dsl_definitions
+      - ./schedules:/app/schedules
+      - ./config:/app/config
+    environment:
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=test
+      - SMTP_PASSWORD=test
+      - FROM_EMAIL=test@taskinity.local
+      - RECIPIENTS=info@softreck.dev
+    depends_on:
+      - mailhog
+      - mini-dashboard
+    networks:
+      - taskinity-network
+    restart: unless-stopped
+    command: python flow_scheduler.py start
+
+  # Serwer do przetwarzania emaili
+  email-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: taskinity-email-processor
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+      - ./flows:/app/flows
+      - ./dsl_definitions:/app/dsl_definitions
+      - ./emails:/app/emails
+    environment:
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=test
+      - SMTP_PASSWORD=test
+      - FROM_EMAIL=test@taskinity.local
+      - IMAP_SERVER=mailhog
+      - IMAP_PORT=1143
+      - IMAP_USERNAME=test
+      - IMAP_PASSWORD=test
+    depends_on:
+      - mailhog
+    networks:
+      - taskinity-network
+    restart: unless-stopped
+    command: python email_pipeline.py
+
+networks:
+  taskinity-network:
+    driver: bridge
+
+volumes:
+  mailhog-data:

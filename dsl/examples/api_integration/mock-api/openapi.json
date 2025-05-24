@@ -1,0 +1,667 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Taskinity Mock API",
+    "description": "Mock API server for Taskinity API integration examples",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Taskinity Team",
+      "url": "https://taskinity.dev",
+      "email": "support@taskinity.dev"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Returns the health status of the API server",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/weather": {
+      "get": {
+        "summary": "Get weather data",
+        "description": "Returns weather data for a specified location",
+        "operationId": "getWeather",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "City name, optionally followed by a comma and country code",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Warsaw,PL"
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude",
+            "schema": {
+              "type": "number"
+            },
+            "example": 52.2298
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitude",
+            "schema": {
+              "type": "number"
+            },
+            "example": 21.0118
+          },
+          {
+            "name": "appid",
+            "in": "query",
+            "description": "API key (not required for mock server)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "units",
+            "in": "query",
+            "description": "Units of measurement (metric, imperial, standard)",
+            "schema": {
+              "type": "string",
+              "enum": ["metric", "imperial", "standard"],
+              "default": "metric"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weather data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/users/{username}": {
+      "get": {
+        "summary": "Get GitHub user",
+        "description": "Returns GitHub user information",
+        "operationId": "getGitHubUser",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "GitHub username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "octocat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GitHub user data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubUser"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/users/{username}/repos": {
+      "get": {
+        "summary": "Get GitHub user repositories",
+        "description": "Returns repositories for a GitHub user",
+        "operationId": "getGitHubUserRepos",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "GitHub username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "octocat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GitHub repositories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GitHubRepo"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "summary": "Get posts",
+        "description": "Returns a list of posts",
+        "operationId": "getPosts",
+        "responses": {
+          "200": {
+            "description": "List of posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Post"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "get": {
+        "summary": "Get post by ID",
+        "description": "Returns a post by ID",
+        "operationId": "getPostById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Post ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "summary": "Get users",
+        "description": "Returns a list of users",
+        "operationId": "getUsers",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Not Found"
+          }
+        }
+      },
+      "WeatherResponse": {
+        "type": "object",
+        "properties": {
+          "coord": {
+            "type": "object",
+            "properties": {
+              "lon": {
+                "type": "number",
+                "example": 21.0118
+              },
+              "lat": {
+                "type": "number",
+                "example": 52.2298
+              }
+            }
+          },
+          "weather": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "example": 800
+                },
+                "main": {
+                  "type": "string",
+                  "example": "Clear"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "clear sky"
+                },
+                "icon": {
+                  "type": "string",
+                  "example": "01d"
+                }
+              }
+            }
+          },
+          "base": {
+            "type": "string",
+            "example": "stations"
+          },
+          "main": {
+            "type": "object",
+            "properties": {
+              "temp": {
+                "type": "number",
+                "example": 22.5
+              },
+              "feels_like": {
+                "type": "number",
+                "example": 20.5
+              },
+              "temp_min": {
+                "type": "number",
+                "example": 17.5
+              },
+              "temp_max": {
+                "type": "number",
+                "example": 27.5
+              },
+              "pressure": {
+                "type": "integer",
+                "example": 1013
+              },
+              "humidity": {
+                "type": "integer",
+                "example": 65
+              }
+            }
+          },
+          "visibility": {
+            "type": "integer",
+            "example": 10000
+          },
+          "wind": {
+            "type": "object",
+            "properties": {
+              "speed": {
+                "type": "number",
+                "example": 5.2
+              },
+              "deg": {
+                "type": "integer",
+                "example": 180
+              }
+            }
+          },
+          "clouds": {
+            "type": "object",
+            "properties": {
+              "all": {
+                "type": "integer",
+                "example": 25
+              }
+            }
+          },
+          "dt": {
+            "type": "integer",
+            "example": 1622209200
+          },
+          "sys": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "integer",
+                "example": 2
+              },
+              "id": {
+                "type": "integer",
+                "example": 2000
+              },
+              "country": {
+                "type": "string",
+                "example": "PL"
+              },
+              "sunrise": {
+                "type": "integer",
+                "example": 1622172000
+              },
+              "sunset": {
+                "type": "integer",
+                "example": 1622230000
+              }
+            }
+          },
+          "timezone": {
+            "type": "integer",
+            "example": 7200
+          },
+          "id": {
+            "type": "integer",
+            "example": 756135
+          },
+          "name": {
+            "type": "string",
+            "example": "Warsaw"
+          },
+          "cod": {
+            "type": "integer",
+            "example": 200
+          }
+        }
+      },
+      "GitHubUser": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "example": "octocat"
+          },
+          "id": {
+            "type": "integer",
+            "example": 12345678
+          },
+          "avatar_url": {
+            "type": "string",
+            "example": "https://avatars.githubusercontent.com/u/12345678?v=4"
+          },
+          "html_url": {
+            "type": "string",
+            "example": "https://github.com/octocat"
+          },
+          "name": {
+            "type": "string",
+            "example": "Octocat User"
+          },
+          "company": {
+            "type": "string",
+            "example": "Taskinity"
+          },
+          "location": {
+            "type": "string",
+            "example": "Warsaw, Poland"
+          },
+          "bio": {
+            "type": "string",
+            "example": "Software developer and Taskinity enthusiast"
+          },
+          "public_repos": {
+            "type": "integer",
+            "example": 20
+          },
+          "followers": {
+            "type": "integer",
+            "example": 100
+          },
+          "following": {
+            "type": "integer",
+            "example": 50
+          }
+        }
+      },
+      "GitHubRepo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 100001
+          },
+          "name": {
+            "type": "string",
+            "example": "octocat-project-1"
+          },
+          "full_name": {
+            "type": "string",
+            "example": "octocat/octocat-project-1"
+          },
+          "private": {
+            "type": "boolean",
+            "example": false
+          },
+          "html_url": {
+            "type": "string",
+            "example": "https://github.com/octocat/octocat-project-1"
+          },
+          "description": {
+            "type": "string",
+            "example": "A sample project 1 by octocat"
+          },
+          "fork": {
+            "type": "boolean",
+            "example": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-01-01T00:00:00Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T00:00:00Z"
+          },
+          "stargazers_count": {
+            "type": "integer",
+            "example": 10
+          },
+          "language": {
+            "type": "string",
+            "example": "JavaScript"
+          },
+          "forks_count": {
+            "type": "integer",
+            "example": 5
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["taskinity", "api", "example", "topic-1"]
+          }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Post 1"
+          },
+          "body": {
+            "type": "string",
+            "example": "This is the body of post 1. It contains some sample text for the Taskinity API integration example."
+          },
+          "userId": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "User 1"
+          },
+          "username": {
+            "type": "string",
+            "example": "user1"
+          },
+          "email": {
+            "type": "string",
+            "example": "user1@example.com"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string",
+                "example": "Street 1"
+              },
+              "suite": {
+                "type": "string",
+                "example": "Suite 1"
+              },
+              "city": {
+                "type": "string",
+                "example": "City 1"
+              },
+              "zipcode": {
+                "type": "string",
+                "example": "00001"
+              },
+              "geo": {
+                "type": "object",
+                "properties": {
+                  "lat": {
+                    "type": "string",
+                    "example": "1.0000"
+                  },
+                  "lng": {
+                    "type": "string",
+                    "example": "1.0000"
+                  }
+                }
+              }
+            }
+          },
+          "phone": {
+            "type": "string",
+            "example": "123-456-7891"
+          },
+          "website": {
+            "type": "string",
+            "example": "user1.example.com"
+          },
+          "company": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "Company 1"
+              },
+              "catchPhrase": {
+                "type": "string",
+                "example": "Catchphrase 1"
+              },
+              "bs": {
+                "type": "string",
+                "example": "BS 1"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

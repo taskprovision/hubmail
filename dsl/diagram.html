@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizualizacja DSL</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4a86e8;
+            text-align: center;
+        }
+        .mermaid {
+            text-align: center;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wizualizacja DSL</h1>
+        <div class="mermaid">
+graph TD
+    %% EmailProcessing: Przetwarzanie e-maili z różnymi kategoriami
+    fetch_emails[fetch_emails] --> classify_emails[classify_emails]
+    classify_emails[classify_emails] --> process_urgent_emails[process_urgent_emails]
+    classify_emails[classify_emails] --> process_emails_with_attachments[process_emails_with_attachments]
+    classify_emails[classify_emails] --> process_regular_emails[process_regular_emails]
+    process_urgent_emails[process_urgent_emails] --> send_responses[send_responses]
+    process_emails_with_attachments[process_emails_with_attachments] --> send_responses[send_responses]
+    process_regular_emails[process_regular_emails] --> send_responses[send_responses]
+
+        </div>
+        <h2>Kod Mermaid</h2>
+        <pre>graph TD
+    %% EmailProcessing: Przetwarzanie e-maili z różnymi kategoriami
+    fetch_emails[fetch_emails] --> classify_emails[classify_emails]
+    classify_emails[classify_emails] --> process_urgent_emails[process_urgent_emails]
+    classify_emails[classify_emails] --> process_emails_with_attachments[process_emails_with_attachments]
+    classify_emails[classify_emails] --> process_regular_emails[process_regular_emails]
+    process_urgent_emails[process_urgent_emails] --> send_responses[send_responses]
+    process_emails_with_attachments[process_emails_with_attachments] --> send_responses[send_responses]
+    process_regular_emails[process_regular_emails] --> send_responses[send_responses]
+</pre>
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

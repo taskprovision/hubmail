@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: taskinity-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-taskinity}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskinity}
+      POSTGRES_DB: ${POSTGRES_DB:-taskinity_data}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - taskinity-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskinity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: taskinity-adminer
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      - postgres
+    networks:
+      - taskinity-network
+
+  data-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile.generator
+    container_name: taskinity-data-generator
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-taskinity}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskinity}
+      POSTGRES_DB: ${POSTGRES_DB:-taskinity_data}
+      GENERATE_ROWS: ${GENERATE_ROWS:-1000}
+      GENERATE_TABLES: ${GENERATE_TABLES:-sales,customers,products}
+    networks:
+      - taskinity-network
+
+networks:
+  taskinity-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

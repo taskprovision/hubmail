@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mock-api:
+    image: node:16-alpine
+    container_name: taskinity-mock-api
+    working_dir: /app
+    volumes:
+      - ./mock-api:/app
+    ports:
+      - "${MOCK_API_PORT:-3000}:3000"
+    command: >
+      sh -c "npm install && npm start"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - taskinity-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api-docs:
+    image: swaggerapi/swagger-ui
+    container_name: taskinity-api-docs
+    ports:
+      - "${API_DOCS_PORT:-8080}:8080"
+    environment:
+      - SWAGGER_JSON=/api/openapi.json
+      - BASE_URL=/docs
+    volumes:
+      - ./mock-api/openapi.json:/api/openapi.json
+    depends_on:
+      - mock-api
+    networks:
+      - taskinity-network
+
+networks:
+  taskinity-network:
+    driver: bridge
