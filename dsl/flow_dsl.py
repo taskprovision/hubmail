@@ -518,7 +518,13 @@ def load_dsl(filename: str) -> str:
     """
     dsl_dir = os.path.join(os.path.dirname(__file__), "dsl_definitions")
     
-    with open(os.path.join(dsl_dir, filename), "r") as f:
+    # Check if the filename already contains the dsl_definitions path
+    if os.path.dirname(filename) == "dsl_definitions" or filename.startswith("dsl_definitions/"):
+        file_path = os.path.join(os.path.dirname(__file__), filename)
+    else:
+        file_path = os.path.join(dsl_dir, filename)
+    
+    with open(file_path, "r") as f:
         return f.read()
 
 def list_dsl_files() -> List[str]:
