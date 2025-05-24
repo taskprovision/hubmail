@@ -569,7 +569,7 @@ Te przykłady pokazują różne zastosowania taskinity, od prostych przepływów
 // Add DSL Flow Visualizer script
 (function() {
   var script = document.createElement('script');
-  script.src = '/static/js/dsl-flow-visualizer.js';
+  script.src = '/hubmail/dsl/static/js/dsl-flow-visualizer.js';
   script.async = true;
   script.onload = function() {
     // Initialize the visualizer when script is loaded

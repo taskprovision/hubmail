@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Root directory of the project
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 # Path to the DSL Flow Visualizer JavaScript
-JS_PATH="/static/js/dsl-flow-visualizer.js"
+JS_PATH="/hubmail/dsl/static/js/dsl-flow-visualizer.js"
 
 # HTML to add at the end of each Markdown file
 read -r -d '' HTML_CONTENT << EOM
