@@ -2,10 +2,10 @@
 name = "taskinity"
 version = "0.1.0"
 description = "Inteligentny Framework do Orkiestracji Zadań"
-authors = ["taskinity Team <info@taskinity.com>"]
+authors = ["Tom Sapletta <info@taskinity.com>"]
 license = "Apache"
 readme = "README.md"
-repository = "https://github.com/taskinity/taskinity"
+repository = "https://github.com/taskinity/python"
 keywords = ["workflow", "orchestration", "task", "automation", "dsl"]
 classifiers = [
     "Development Status :: 4 - Beta",

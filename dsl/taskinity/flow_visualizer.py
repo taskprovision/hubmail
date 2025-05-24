@@ -8,7 +8,7 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
-from taskinity.flow_dsl import parse_dsl, load_dsl, list_dsl_files, list_flows
+from taskinity.core.taskinity_core import parse_dsl, load_dsl, list_dsl_files, list_flows
 
 def generate_mermaid_from_dsl(dsl_text: str) -> str:
     """

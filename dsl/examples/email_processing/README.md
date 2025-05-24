@@ -19,7 +19,7 @@ This example demonstrates how to use Taskinity to create an email processing pip
 
 1. Clone the Taskinity repository:
    ```bash
-   git clone https://github.com/taskinity/taskinity.git
+   git clone https://github.com/taskinity/python.git
    cd taskinity/examples/email_processing
    ```
 

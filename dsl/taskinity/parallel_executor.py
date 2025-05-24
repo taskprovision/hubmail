@@ -370,7 +370,7 @@ def run_parallel_flow_from_dsl(dsl_text: str, input_data: Dict[str, Any] = None,
     Returns:
         Wyniki przepływu
     """
-    from taskinity.flow_dsl import parse_dsl, REGISTRY
+    from taskinity.core.taskinity_core import parse_dsl, REGISTRY
     
     # Parsuj definicję DSL
     dsl_definition = parse_dsl(dsl_text)
@@ -386,7 +386,7 @@ def run_parallel_flow_from_dsl(dsl_text: str, input_data: Dict[str, Any] = None,
 
 if __name__ == "__main__":
     # Przykład użycia
-    from taskinity.flow_dsl import task
+    from taskinity.core.taskinity_core import task
     
     @task()
     def task1(x: int, y: int):

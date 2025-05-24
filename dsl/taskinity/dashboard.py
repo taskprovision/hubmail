@@ -17,7 +17,7 @@ except ImportError:
     STREAMLIT_AVAILABLE = False
 
 # Import funkcji z Taskinity
-from taskinity.flow_dsl import run_flow_from_dsl, load_dsl, parse_dsl, list_flows
+from taskinity.core.taskinity_core import run_flow_from_dsl, load_dsl, parse_dsl, list_flows
 from taskinity.flow_visualizer import generate_mermaid_from_dsl
 from taskinity.flow_scheduler import list_schedules, create_schedule, delete_schedule, load_schedule
 from taskinity.utils import setup_logger
@@ -51,7 +51,7 @@ def create_dashboard():
     )
     
     st.title("Taskinity Dashboard")
-    st.sidebar.image("https://raw.githubusercontent.com/taskinity/taskinity/main/docs/images/logo.svg", width=200)
+    st.sidebar.image("https://raw.githubusercontent.com/taskinity/python/main/docs/images/logo.svg", width=200)
     
     menu = st.sidebar.selectbox(
         "Menu",

@@ -1,0 +1,111 @@
+# Makefile for Email Processing Examples
+# This file contains all possible tests, examples, and run commands
+
+# Variables
+PYTHON = python3
+DOCKER_COMPOSE = docker-compose
+PYTEST = pytest
+
+# Default target
+.PHONY: help
+help:
+	@echo "Available commands:"
+	@echo "  make run-basic          - Run basic email processing example"
+	@echo "  make run-pipeline       - Run full email processing pipeline"
+	@echo "  make run-test           - Run email notification test"
+	@echo "  make docker-up          - Start all Docker containers"
+	@echo "  make docker-down        - Stop all Docker containers"
+	@echo "  make docker-up-basic    - Start basic Docker setup"
+	@echo "  make docker-up-full     - Start full Docker setup with IMAP/SMTP"
+	@echo "  make docker-up-mock     - Start mock email server Docker setup"
+	@echo "  make test               - Run all tests"
+	@echo "  make test-unit          - Run unit tests"
+	@echo "  make test-integration   - Run integration tests"
+	@echo "  make clean              - Remove temporary files"
+	@echo "  make lint               - Run linter on code"
+	@echo "  make format             - Format code"
+
+# Run examples
+.PHONY: run-basic
+run-basic:
+	$(PYTHON) tasks/fetch_emails.py
+
+.PHONY: run-pipeline
+run-pipeline:
+	$(PYTHON) email_pipeline.py
+
+.PHONY: run-test
+run-test:
+	$(PYTHON) test_email_notification.py
+
+# Docker commands
+.PHONY: docker-up
+docker-up:
+	$(DOCKER_COMPOSE) -f docker/full/docker-compose.yml up -d
+
+.PHONY: docker-down
+docker-down:
+	$(DOCKER_COMPOSE) -f docker/full/docker-compose.yml down
+
+.PHONY: docker-up-basic
+docker-up-basic:
+	$(DOCKER_COMPOSE) -f docker/basic/docker-compose.yml up -d
+
+.PHONY: docker-up-full
+docker-up-full:
+	$(DOCKER_COMPOSE) -f docker/full/docker-compose.yml up -d
+
+.PHONY: docker-up-mock
+docker-up-mock:
+	$(DOCKER_COMPOSE) -f docker/mock/docker-compose.yml up -d
+
+# Test commands
+.PHONY: test
+test:
+	$(PYTEST) tests/
+
+.PHONY: test-unit
+test-unit:
+	$(PYTEST) tests/unit/
+
+.PHONY: test-integration
+test-integration:
+	$(PYTEST) tests/integration/
+
+# Utility commands
+.PHONY: clean
+clean:
+	rm -rf __pycache__
+	rm -rf .pytest_cache
+	rm -rf logs/*.log
+	rm -rf emails/attachments/*
+	find . -name "*.pyc" -delete
+
+.PHONY: lint
+lint:
+	flake8 *.py tasks/ utils/
+
+.PHONY: format
+format:
+	black *.py tasks/ utils/
+
+# Example-specific commands
+.PHONY: run-imap-fetch
+run-imap-fetch:
+	$(PYTHON) tasks/fetch_emails.py
+
+.PHONY: run-smtp-send
+run-smtp-send:
+	$(PYTHON) tasks/send_emails.py
+
+.PHONY: run-classify
+run-classify:
+	$(PYTHON) tasks/classify_emails.py
+
+.PHONY: run-process
+run-process:
+	$(PYTHON) tasks/process_emails.py
+
+.PHONY: run-flow
+run-flow:
+	$(PYTHON) flow.py

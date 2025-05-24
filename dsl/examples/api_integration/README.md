@@ -20,7 +20,7 @@ This example demonstrates how to use Taskinity to integrate with external APIs. 
 
 1. Clone the Taskinity repository:
    ```bash
-   git clone https://github.com/taskinity/taskinity.git
+   git clone https://github.com/taskinity/python.git
    cd taskinity/examples/api_integration
    ```
 

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from taskinity.flow_dsl import run_flow_from_dsl, load_dsl
+from taskinity.core.taskinity_core import run_flow_from_dsl, load_dsl
 from taskinity.parallel_executor import run_parallel_flow_from_dsl
 from taskinity.flow_visualizer import visualize_flow
 from taskinity.flow_scheduler import FlowScheduler

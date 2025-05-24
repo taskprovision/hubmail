@@ -1,0 +1,11 @@
+# Core dependencies
+taskinity
+python-dotenv>=0.19.0
+matplotlib>=3.5.0
+numpy>=1.20.0
+
+# Optional dependencies for framework comparisons
+# Uncomment to enable comparison with other frameworks
+# prefect==1.4.1
+# apache-airflow==2.5.1
+# luigi==3.1.1

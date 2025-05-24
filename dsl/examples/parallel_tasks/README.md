@@ -19,7 +19,7 @@ This example demonstrates how to use Taskinity to run tasks in parallel, improvi
 
 1. Clone the Taskinity repository:
    ```bash
-   git clone https://github.com/taskinity/taskinity.git
+   git clone https://github.com/taskinity/python.git
    cd taskinity/examples/parallel_tasks
    ```
 

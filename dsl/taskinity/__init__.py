@@ -9,7 +9,7 @@ parallel execution, scheduling, and integration with external systems.
 __version__ = "0.1.0"
 
 # Core functionality
-from taskinity.flow_dsl import task, flow, run_flow_from_dsl, parse_dsl, save_dsl, load_dsl, list_dsl_files, list_flows
+from taskinity.core.taskinity_core import task, flow, run_flow_from_dsl, parse_dsl, save_dsl, load_dsl, list_dsl_files, list_flows, FlowStatus, REGISTRY
 from taskinity.parallel_executor import run_parallel_flow_from_dsl, ParallelFlowExecutor
 
 # Visualization and monitoring

@@ -73,7 +73,7 @@ pip install taskinity
 poetry add taskinity
 
 # Clone repository (optional for the latest development version)
-git clone https://github.com/taskinity/taskinity.git
+git clone https://github.com/taskinity/python.git
 cd taskinity
 
 # Run example
@@ -107,13 +107,22 @@ flow DataProcessing:
 results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
 ```
 
-## Specyfikacja DSL
+## DSL Specification
 
-Taskinity używa czytelnego języka do definiowania przepływów:
+Taskinity uses a readable language for defining flows:
 
-### Core
+## Project Structure
 
-The core functionality includes task and flow definitions, execution engine, and DSL parser.
+Taskinity follows a modular architecture for better organization and extensibility:
+
+### Core Module
+
+The core module (`taskinity/core/`) contains the essential functionality:
+
+- Task and flow decorators
+- DSL parser and executor
+- Flow management utilities
+- Registry and execution tracking
 
 ### Extensions
 
@@ -530,28 +539,30 @@ POST /api/run
 - Optymalne wykorzystanie dostępnych zasobów (CPU)
 - Pełna kompatybilność z istniejącymi definicjami DSL
 
-## Planowanie Przepływów
 
-taskinity pozwala na planowanie automatycznego wykonania przepływów:
+
+## Flow Scheduling
+
+Taskinity allows scheduling automatic flow execution:
 
 ```bash
-# Uruchomienie planera
+# Start the scheduler
 python flow_scheduler.py start
 
-# Utworzenie harmonogramu (co 60 minut)
+# Create a schedule (every 60 minutes)
 python flow_scheduler.py create dsl_definitions/email_processing.dsl 60
 
-# Lista harmonogramów
+# List all schedules
 python flow_scheduler.py list
 
-# Ręczne uruchomienie harmonogramu
+# Manually run a schedule
 python flow_scheduler.py run [schedule_id]
 
-# Usunięcie harmonogramu
+# Delete a schedule
 python flow_scheduler.py delete [schedule_id]
 ```
 
-Lub poprzez API w mini dashboardzie:
+Or through the API in the mini dashboard:
 
 ```
 GET /api/schedules
@@ -563,15 +574,15 @@ POST /api/scheduler/start
 POST /api/scheduler/stop
 ```
 
-**Typy Harmonogramów:**
-- Interwałowy (co X minut)
-- Dzienny (o określonej godzinie)
-- Tygodniowy (w określony dzień tygodnia)
-- Miesięczny (w określony dzień miesiąca)
+**Schedule Types:**
+- Interval (every X minutes)
+- Daily (at a specific time)
+- Weekly (on a specific day of the week)
+- Monthly (on a specific day of the month)
 
 ## API Reference
 
-### Dekoratory
+### Decorators
 
 #### `@task`
 
@@ -581,10 +592,10 @@ def my_task():
     pass
 ```
 
-- **name**: Opcjonalna nazwa zadania (domyślnie: nazwa funkcji)
-- **description**: Opcjonalny opis zadania
-- **validate_input**: Opcjonalna funkcja do walidacji danych wejściowych
-- **validate_output**: Opcjonalna funkcja do walidacji danych wyjściowych
+- **name**: Optional task name (default: function name)
+- **description**: Optional task description
+- **validate_input**: Optional function for input data validation
+- **validate_output**: Optional function for output data validation
 
 #### `@flow`
 
@@ -594,10 +605,10 @@ def my_flow():
     pass
 ```
 
-- **name**: Opcjonalna nazwa przepływu (domyślnie: nazwa funkcji)
-- **description**: Opcjonalny opis przepływu
+- **name**: Optional flow name (default: function name)
+- **description**: Optional flow description
 
-### Funkcje
+### Functions
 
 #### `run_flow_from_dsl`
 
@@ -605,8 +616,8 @@ def my_flow():
 run_flow_from_dsl(dsl_text, input_data=None)
 ```
 
-- **dsl_text**: Tekst DSL definiujący przepływ
-- **input_data**: Opcjonalne dane wejściowe dla przepływu
+- **dsl_text**: DSL text defining the flow
+- **input_data**: Optional input data for the flow
 
 #### `parse_dsl`
 
@@ -614,7 +625,7 @@ run_flow_from_dsl(dsl_text, input_data=None)
 parse_dsl(dsl_text)
 ```
 
-- **dsl_text**: Tekst DSL do sparsowania
+- **dsl_text**: DSL text to parse
 
 #### `save_dsl`
 
@@ -622,8 +633,8 @@ parse_dsl(dsl_text)
 save_dsl(dsl_text, filename)
 ```
 
-- **dsl_text**: Tekst DSL do zapisania
-- **filename**: Nazwa pliku
+- **dsl_text**: DSL text to save
+- **filename**: Filename
 
 #### `load_dsl`
 
@@ -631,7 +642,7 @@ save_dsl(dsl_text, filename)
 load_dsl(filename)
 ```
 
-- **filename**: Nazwa pliku DSL do wczytania
+- **filename**: DSL filename to load
 
 #### `list_flows`
 
@@ -639,7 +650,7 @@ load_dsl(filename)
 list_flows()
 ```
 
-Zwraca listę wszystkich wykonanych przepływów.
+Returns a list of all executed flows.
 
 ## Extensions and Plugins
 

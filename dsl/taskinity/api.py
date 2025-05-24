@@ -28,7 +28,7 @@ except ImportError:
             pass
 
 # Import funkcji z Taskinity
-from taskinity.flow_dsl import run_flow_from_dsl, load_dsl, parse_dsl, list_flows
+from taskinity.core.taskinity_core import run_flow_from_dsl, load_dsl, parse_dsl, list_flows
 from taskinity.utils import generate_id, timed_execution, setup_logger
 
 # Konfiguracja loggera

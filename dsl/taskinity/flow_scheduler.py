@@ -14,7 +14,7 @@ from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
 
 # Import funkcji z Taskinity
-from taskinity.flow_dsl import run_flow_from_dsl, load_dsl, parse_dsl
+from taskinity.core.taskinity_core import run_flow_from_dsl, load_dsl, parse_dsl
 
 # Opcjonalny import równoległego wykonawcy
 try:

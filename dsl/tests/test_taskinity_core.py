@@ -1,5 +1,5 @@
 """
-Tests for the core flow DSL functionality of Taskinity.
+Tests for the core functionality of Taskinity.
 """
 import pytest
 from unittest.mock import patch, MagicMock
@@ -73,7 +73,7 @@ class TestTaskDecorator:
 
 
 class TestFlowDecorator:
-    """Tests for the flow decorator."""
+    """Tests for the Taskinity core module decorator."""
     
     def test_flow_decorator_basic(self):
         """Test basic flow decorator functionality."""
