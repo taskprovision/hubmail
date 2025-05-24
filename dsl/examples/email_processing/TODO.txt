@@ -17,3 +17,6 @@ w podfodlerze znajdowac sie powinny
 W podfolderach nie powinno byc pythona, bo onse powinny być w /home/tom/github/taskprovision/hubmail/dsl/examples/email_processing
 a w podfolderach powinny byc tylko pliki konfiguracyjne, aby ulatwic uruchomienie i testowanie
 dlatego wazny jest podzial na mniejsze pliki w glownym i dodawac tam dekoratory, aby moc importowac w podfolderze tylko do flow.py funkcje ipliki python
+
+
+

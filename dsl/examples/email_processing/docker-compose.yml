@@ -1,110 +1,27 @@
+# Main docker-compose.yml for Email Processing Example
+# This file serves as a router to the different Docker environments
+
+# To use a specific environment, run one of the following commands:
+# - Basic environment: docker-compose -f docker/basic/docker-compose.yml up -d
+# - Mock environment: docker-compose -f docker/mock/docker-compose.yml up -d
+# - Full environment: docker-compose -f docker/full/docker-compose.yml up -d
+
+# Or use the Makefile commands:
+# - make docker-up-basic
+# - make docker-up-mock
+# - make docker-up-full
+
 version: '3.8'
 
+# Default configuration - uses the mock environment
 services:
-  # Serwer SMTP do testowania powiadomień email
-  mailhog:
-    image: mailhog/mailhog
-    container_name: taskinity-mailhog
-    ports:
-      - "1025:1025"  # SMTP port
-      - "8025:8025"  # Web UI port
-    networks:
-      - taskinity-network
-    volumes:
-      - mailhog-data:/data
-    environment:
-      MH_STORAGE: maildir
-      MH_MAILDIR_PATH: /data
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "1025"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+  # This service just prints a message and exits
+  router:
+    image: alpine
+    container_name: taskinity-email-router
+    command: >
+      sh -c "echo '\n\n=====================================================\n\nPlease use one of the specific Docker environments:\n\n- Basic: make docker-up-basic\n- Mock: make docker-up-mock\n- Full: make docker-up-full\n\nOr use docker-compose directly:\n\n- Basic: docker-compose -f docker/basic/docker-compose.yml up -d\n- Mock: docker-compose -f docker/mock/docker-compose.yml up -d\n- Full: docker-compose -f docker/full/docker-compose.yml up -d\n\n=====================================================\n\n' && exit 0"
 
-  mini-dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile.dashboard
-    container_name: taskinity-dashboard
-    volumes:
-      - ./:/app
-      - ./logs:/app/logs
-      - ./dsl_definitions:/app/dsl_definitions
-      - ./config:/app/config
-    environment:
-      - SMTP_SERVER=mailhog
-      - SMTP_PORT=1025
-      - SMTP_USERNAME=test
-      - SMTP_PASSWORD=test
-      - FROM_EMAIL=test@taskinity.local
-      - RECIPIENTS=info@softreck.dev
-    depends_on:
-      - mailhog
-    networks:
-      - taskinity-network
-    restart: unless-stopped
-    command: python mini_dashboard.py
-
-  # Planer zadań
-  scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile.dashboard
-    container_name: taskinity-scheduler
-    volumes:
-      - ./:/app
-      - ./logs:/app/logs
-      - ./flows:/app/flows
-      - ./dsl_definitions:/app/dsl_definitions
-      - ./schedules:/app/schedules
-      - ./config:/app/config
-    environment:
-      - SMTP_SERVER=mailhog
-      - SMTP_PORT=1025
-      - SMTP_USERNAME=test
-      - SMTP_PASSWORD=test
-      - FROM_EMAIL=test@taskinity.local
-      - RECIPIENTS=info@softreck.dev
-    depends_on:
-      - mailhog
-      - mini-dashboard
-    networks:
-      - taskinity-network
-    restart: unless-stopped
-    command: python flow_scheduler.py start
-
-  # Serwer do przetwarzania emaili
-  email-processor:
-    build:
-      context: .
-      dockerfile: Dockerfile.dashboard
-    container_name: taskinity-email-processor
-    volumes:
-      - ./:/app
-      - ./logs:/app/logs
-      - ./flows:/app/flows
-      - ./dsl_definitions:/app/dsl_definitions
-      - ./emails:/app/emails
-    environment:
-      - SMTP_SERVER=mailhog
-      - SMTP_PORT=1025
-      - SMTP_USERNAME=test
-      - SMTP_PASSWORD=test
-      - FROM_EMAIL=test@taskinity.local
-      - IMAP_SERVER=mailhog
-      - IMAP_PORT=1143
-      - IMAP_USERNAME=test
-      - IMAP_PASSWORD=test
-    depends_on:
-      - mailhog
-    networks:
-      - taskinity-network
-    restart: unless-stopped
-    command: python email_pipeline.py
-
-networks:
-  taskinity-network:
-    driver: bridge
-
-volumes:
-  mailhog-data:
+# For backward compatibility, you can still use:
+# docker-compose up
+# This will just show the message above and exit
