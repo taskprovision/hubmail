@@ -50,6 +50,23 @@ This example demonstrates how to use Taskinity to create an email processing pip
 
 ## Running the Example
 
+### Using the Shell Scripts
+
+The included shell scripts provide convenient commands for running the Docker environments:
+
+```bash
+# Start Docker environments
+./docker-up.sh basic   # Start basic environment with mock data
+./docker-up.sh mock    # Start mock environment with MailHog
+./docker-up.sh full    # Start full environment with real mail server
+
+# Stop Docker environments
+./docker-down.sh basic  # Stop basic environment
+./docker-down.sh mock   # Stop mock environment
+./docker-down.sh full   # Stop full environment
+./docker-down.sh all    # Stop all environments
+```
+
 ### Using the Makefile
 
 The included Makefile provides convenient commands for running the example:
@@ -63,16 +80,6 @@ make run-mock
 
 # Run tests
 make test
-
-# Start Docker environments
-make docker-up-basic
-make docker-up-mock
-make docker-up-full
-
-# Stop Docker environments
-make docker-down-basic
-make docker-down-mock
-make docker-down-full
 ```
 
 ### Main Flow
