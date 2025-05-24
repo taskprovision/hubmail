@@ -962,7 +962,8 @@ build:
 ## Publish package to PyPI
 publish: build
 	@echo -e "Publishing package to PyPI..."
-	poetry publish
+	poetry version patch
+	poetry publish --build
 
 ## Publish package to TestPyPI
 publish-test: build

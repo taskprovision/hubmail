@@ -9,6 +9,8 @@ This example demonstrates how to use Taskinity to create an email processing pip
 - Process email content and attachments
 - Send notifications via email
 - Schedule regular email processing
+- Modular task structure for better organization
+- Docker environments for easy deployment and testing
 
 ## Prerequisites
 
@@ -29,87 +31,145 @@ This example demonstrates how to use Taskinity to create an email processing pip
    # Edit .env with your specific configuration
    ```
 
-3. Start the MailHog service using Docker Compose:
+3. Choose a Docker environment to run:
    ```bash
-   docker-compose up -d
+   # For basic testing with mock data
+   make docker-up-basic
+   
+   # For testing with MailHog (mock SMTP server with web UI)
+   make docker-up-mock
+   
+   # For full environment with real IMAP/SMTP servers
+   make docker-up-full
    ```
-   This will start a MailHog instance that provides both SMTP and IMAP services for testing.
 
-4. Install the required dependencies:
+4. Or install locally with the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
 ## Running the Example
 
-### Email Pipeline
+### Using the Makefile
 
-The `email_pipeline.py` file demonstrates a complete email processing pipeline using Taskinity:
+The included Makefile provides convenient commands for running the example:
 
 ```bash
-python email_pipeline.py
+# Run the main flow
+make run
+
+# Run with mock data
+make run-mock
+
+# Run tests
+make test
+
+# Start Docker environments
+make docker-up-basic
+make docker-up-mock
+make docker-up-full
+
+# Stop Docker environments
+make docker-down-basic
+make docker-down-mock
+make docker-down-full
+```
+
+### Main Flow
+
+The `flow.py` file demonstrates a complete email processing pipeline using Taskinity:
+
+```bash
+python flow.py
 ```
 
 This will:
 1. Connect to the IMAP server
 2. Fetch unread emails
-3. Process each email according to defined rules
-4. Send notifications for important emails
-5. Mark processed emails as read
+3. Classify emails into categories
+4. Process each category appropriately
+5. Send responses based on email type
 
-### Email Processor
+### Modular Tasks
 
-The `email_processor.py` file shows how to use Taskinity to process individual emails:
+The example is organized into modular tasks in the `tasks` directory:
+
+- `fetch_emails.py` - Handles fetching emails from an IMAP server
+- `classify_emails.py` - Classifies emails into different categories
+- `process_emails.py` - Processes different types of emails
+- `send_emails.py` - Sends email responses
+
+You can run individual task modules for testing:
 
 ```bash
-python email_processor.py
+python -m tasks.fetch_emails
+python -m tasks.classify_emails
+python -m tasks.process_emails
+python -m tasks.send_emails
 ```
 
-### Testing Email Notifications
+## Docker Environments
 
-The `test_email_notification.py` file demonstrates how to send test email notifications:
+The example includes three Docker environments in the `docker` directory:
+
+### Basic Environment
+
+The basic environment (`docker/basic`) provides a simple setup for running with mock data:
 
 ```bash
-python test_email_notification.py
+make docker-up-basic
 ```
 
-## Docker Compose Configuration
+### Mock Environment with MailHog
 
-The included `docker-compose.yml` file sets up:
+The mock environment (`docker/mock`) includes MailHog for testing email sending:
 
-- MailHog - A testing mail server with SMTP and IMAP capabilities
-- Web interface for MailHog available at http://localhost:8025
+```bash
+make docker-up-mock
+```
+
+Features:
+- MailHog SMTP server for testing email sending
+- Web interface for viewing sent emails at http://localhost:8025
+- Automatic test email generation
+
+### Full Environment
+
+The full environment (`docker/full`) includes a complete mail server:
+
+```bash
+make docker-up-full
+```
+
+Features:
+- Complete mail server with IMAP and SMTP
+- Persistent mail storage
+- Support for real email processing
 
 ## Flow Definition
 
 This example defines the following Taskinity flow:
 
 ```
-flow EmailProcessingPipeline:
-    description: "Pipeline for processing emails"
-    
-    task FetchEmails:
-        description: "Fetch unread emails from IMAP server"
-        # Code to connect to IMAP and fetch emails
-    
-    task FilterEmails:
-        description: "Filter emails based on rules"
-        # Code to filter emails by subject, sender, etc.
-    
-    task ProcessEmails:
-        description: "Process email content"
-        # Code to extract and process email content
-    
-    task SendNotifications:
-        description: "Send notifications for important emails"
-        # Code to send notifications
-    
-    task MarkAsProcessed:
-        description: "Mark emails as read/processed"
-        # Code to update email status
-    
-    FetchEmails -> FilterEmails -> ProcessEmails -> SendNotifications -> MarkAsProcessed
+flow EmailProcessing:
+    description: "Email processing flow with categorization"
+    fetch_emails -> classify_emails
+    classify_emails -> process_urgent_emails
+    classify_emails -> process_emails_with_attachments
+    classify_emails -> process_support_emails
+    classify_emails -> process_order_emails
+    classify_emails -> process_regular_emails
+    process_urgent_emails -> send_responses
+    process_emails_with_attachments -> send_responses
+    process_support_emails -> send_responses
+    process_order_emails -> send_responses
+    process_regular_emails -> send_responses
 ```
+
+This flow demonstrates:
+1. Modular task structure
+2. Parallel processing of different email categories
+3. Centralized response handling
 
 ## Performance Comparison
 
@@ -122,6 +182,26 @@ This example demonstrates the efficiency of using Taskinity for email processing
 | Processing Time | 0.5s per email | 1.2s per email | 58% faster |
 | Error Handling | Built-in | Manual implementation | Simplified |
 
+## Project Structure
+
+```
+email_processing/
+├── docker/                  # Docker environments
+│   ├── basic/               # Basic environment with mock data
+│   ├── full/                # Full environment with real mail server
+│   └── mock/                # Mock environment with MailHog
+├── tasks/                   # Modular task modules
+│   ├── __init__.py          # Package initialization
+│   ├── fetch_emails.py      # Email fetching functionality
+│   ├── classify_emails.py   # Email classification
+│   ├── process_emails.py    # Email processing
+│   └── send_emails.py       # Email sending
+├── flow.py                  # Main flow definition and execution
+├── Makefile                 # Commands for running and testing
+├── requirements.txt         # Dependencies
+└── README.md                # Documentation
+```
+
 ## Extending the Example
 
 You can extend this example by:
@@ -130,9 +210,13 @@ You can extend this example by:
 2. Implementing content analysis using NLP
 3. Adding database storage for processed emails
 4. Creating a web dashboard to monitor email processing
+5. Adding more specialized email processors for different categories
+6. Implementing authentication for the web interface
 
 ## Troubleshooting
 
 - If you can't connect to the IMAP server, check your .env configuration
-- Ensure MailHog is running by visiting http://localhost:8025
-- Check the logs directory for detailed error messages
+- For the mock environment, ensure MailHog is running by visiting http://localhost:8025
+- For the full environment, check that the mail server is properly configured
+- Use `make logs` to view the logs from the Docker containers
+- Check the `docker` directory for environment-specific README files with detailed instructions

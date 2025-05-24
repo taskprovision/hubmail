@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "taskinity"
-version = "0.1.0"
+version = "0.1.1"
 description = "Inteligentny Framework do Orkiestracji Zadań"
 authors = ["Tom Sapletta <info@taskinity.com>"]
 license = "Apache"
