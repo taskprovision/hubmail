@@ -1,105 +1,109 @@
-# Taskinity - Inteligentny Framework do Orkiestracji Zadań
+# Taskinity - Intelligent Task Orchestration Framework
 
-Taskinity to nowoczesny framework do definiowania, zarządzania i monitorowania przepływów zadań za pomocą intuicyjnego języka DSL i dekoratorów Python. Zaprojektowany z myślą o prostocie i wydajności, Taskinity oferuje znacznie mniejszy narzut niż Prefect, Airflow czy Luigi, działając natychmiast bez skomplikowanej konfiguracji.
+Taskinity is a modern framework for defining, managing, and monitoring task flows using an intuitive DSL and Python decorators. Designed with simplicity and efficiency in mind, Taskinity offers significantly less overhead than Prefect, Airflow, or Luigi, working instantly without complicated configuration.
 
 ![Taskinity Logo](./assets/taskinity-logo.svg)
 
-## Misja
+## Mission
 
-Naszą misją jest dostarczenie prostego, ale potężnego narzędzia do orkiestracji zadań, które pozwala zespołom skupić się na logice biznesowej, a nie na zarządzaniu infrastrukturą. Wierzymy, że automatyzacja przepływów pracy powinna być dostępna dla wszystkich, niezależnie od wielkości zespołu czy budżetu.
+Our mission is to provide a simple yet powerful task orchestration tool that allows teams to focus on business logic rather than infrastructure management. We believe workflow automation should be accessible to everyone, regardless of team size or budget.
 
-## Strategia
+## Strategy
 
-Taskinity realizuje swoją misję poprzez:
+Taskinity achieves its mission through:
 
-1. **Prostotę użycia** - intuicyjny interfejs i minimalna konfiguracja
-2. **Skalowalność** - od prostych skryptów po złożone przepływy produkcyjne
-3. **Elastyczność** - łatwa integracja z istniejącymi systemami i narzędziami
-4. **Transparentność** - pełna widoczność stanu i historii wykonania zadań
-5. **Niezawodność** - odporność na błędy i mechanizmy automatycznego odzyskiwania
+1. **Ease of use** - intuitive interface and minimal configuration
+2. **Scalability** - from simple scripts to complex production workflows
+3. **Flexibility** - easy integration with existing systems and tools
+4. **Transparency** - full visibility of task status and execution history
+5. **Reliability** - fault tolerance and automatic recovery mechanisms
 
-## Menu Nawigacyjne
+## Navigation Menu
 
-- [Dokumentacja](./docs/dokumentacja.md) - Pełna dokumentacja techniczna
-- [Samouczek](./docs/samouczek.md) - Krok po kroku wprowadzenie do Taskinity
-- [Przykłady](./docs/przyklady.md) - Gotowe przykłady przepływów
-- [FAQ](./docs/faq.md) - Najczęściej zadawane pytania
-- [Rozwiązywanie problemów](./docs/troubleshooting.md) - Pomoc w rozwiązywaniu problemów
+- [Documentation](./docs/documentation.md) - Complete technical documentation
+- [Tutorial](./docs/tutorial.md) - Step-by-step introduction to Taskinity
+- [Examples](./examples/README.md) - Ready-to-use flow examples
+- [FAQ](./docs/faq.md) - Frequently asked questions
+- [Troubleshooting](./docs/troubleshooting.md) - Help with solving problems
 
-## Spis treści
+## Table of Contents
 
-- [Zalety Taskinity](#zalety-taskinity)
-- [Szybki start](#szybki-start)
-- [Specyfikacja DSL](#specyfikacja-dsl)
-- [Przykłady użycia](#przykłady-użycia)
-- [Wizualizacja przepływów](#wizualizacja-przepływów)
-- [Monitorowanie i logi](#monitorowanie-i-logi)
-- [Porównanie z innymi frameworkami](#porównanie-z-innymi-frameworkami)
+- [Advantages of Taskinity](#advantages-of-taskinity)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [DSL Specification](#dsl-specification)
+- [Examples](#examples)
+- [Flow Visualization](#flow-visualization)
+- [Monitoring and Logs](#monitoring-and-logs)
+- [Comparison with Other Frameworks](#comparison-with-other-frameworks)
 - [Dashboard](#dashboard)
-- [Powiadomienia](#powiadomienia)
-- [Równoległe Wykonanie](#równoległe-wykonanie)
-- [Planowanie Przepływów](#planowanie-przepływów)
-- [Przetwarzanie Email](#przetwarzanie-email)
+- [Notifications](#notifications)
+- [Parallel Execution](#parallel-execution)
+- [Flow Scheduling](#flow-scheduling)
+- [Email Processing](#email-processing)
 - [API Reference](#api-reference)
-- [Rozszerzenia i ulepszenia](#rozszerzenia-i-ulepszenia)
+- [Extensions and Plugins](#extensions-and-plugins)
 
-## Zalety Taskinity
+## Advantages of Taskinity
 
-- **Prostota** - minimalny zestaw funkcji, łatwy do zrozumienia i rozszerzenia
-- **Dekoratory** - intuicyjny sposób definiowania zadań i przepływów
-- **DSL** - czytelny język do definiowania połączeń między zadaniami
-- **Zero-config** - działa natychmiast, bez skomplikowanej konfiguracji
-- **Zaawansowany monitoring** - automatyczne logowanie i śledzenie wykonania z metrykami
-- **Wizualizacja** - interaktywne narzędzia do wizualizacji przepływów
-- **Walidacja danych** - wbudowane mechanizmy walidacji danych wejściowych i wyjściowych
-- **Równoległe wykonanie** - automatyczna optymalizacja przepływów dla lepszej wydajności
-- **Odtwarzalność** - pełna historia wykonania i możliwość odtworzenia przepływów
+- **Simplicity** - minimal feature set, easy to understand and extend
+- **Decorators** - intuitive way to define tasks and flows
+- **DSL** - readable language for defining connections between tasks
+- **Zero-config** - works immediately without complicated setup
+- **Advanced monitoring** - automatic logging and execution tracking with metrics
+- **Visualization** - interactive tools for flow visualization
+- **Data validation** - built-in mechanisms for input and output data validation
+- **Parallel execution** - automatic flow optimization for better performance
+- **Reproducibility** - full execution history and ability to recreate flows
+- **Modularity** - core functionality with optional extensions
+- **Data processing** - built-in tools for various data sources
+- **API integration** - easy connection to external services
 
-## Szybki start
+## Quick Start
 
-### Instalacja
+### Installation
 
-Taskinity można zainstalować za pomocą pip lub poetry:
+Taskinity can be installed using pip or poetry:
 
 ```bash
-# Instalacja przez pip
+# Installation with pip
 pip install taskinity
 
-# LUB instalacja przez poetry
+# OR installation with poetry
 poetry add taskinity
 
-# Klonowanie repozytorium (opcjonalnie dla najnowszej wersji rozwojowej)
+# Clone repository (optional for the latest development version)
 git clone https://github.com/taskinity/taskinity.git
 cd taskinity
 
-# Uruchomienie przykładu
+# Run example
 python -m examples.basic_flow
 ```
 
-### Podstawowe użycie
+### Basic Usage
 
 ```python
 from taskinity import task, run_flow_from_dsl
 
-# 1. Definiowanie zadań
-@task(name="Pobieranie danych")
+# 1. Define tasks
+@task(name="Fetch Data")
 def fetch_data(url: str):
-    # Implementacja
+    # Implementation
     return data
 
-@task(name="Przetwarzanie danych")
+@task(name="Process Data")
 def process_data(data):
-    # Implementacja
+    # Implementation
     return processed_data
 
-# 2. Definiowanie przepływu DSL
+# 2. Define flow using DSL
 flow_dsl = """
 flow DataProcessing:
-    description: "Przetwarzanie danych"
+    description: "Data Processing Flow"
     fetch_data -> process_data
 """
 
-# 3. Uruchamianie przepływu
+# 3. Run the flow
 results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
 ```
 
@@ -107,19 +111,36 @@ results = run_flow_from_dsl(flow_dsl, {"url": "https://example.com/data"})
 
 Taskinity używa czytelnego języka do definiowania przepływów:
 
-```
-flow [NazwaPrzepływu]:
-    description: "[Opis przepływu]"
-    [zadanie_źródłowe] -> [zadanie_docelowe]
-    [zadanie_źródłowe] -> [zadanie_docelowe1, zadanie_docelowe2]
-    [zadanie_źródłowe] -> [zadanie_docelowe]
-```
+### Core
 
-### Elementy składni:
+The core functionality includes task and flow definitions, execution engine, and DSL parser.
 
-- **flow [NazwaPrzepływu]:** - Definicja przepływu z nazwą
-- **description:** - Opcjonalny opis przepływu
-- **[zadanie_źródłowe] -> [zadanie_docelowe]** - Definicja połączenia między zadaniami
+### Extensions
+
+Optional extensions enhance Taskinity with additional features:
+
+- **Visualization** - Convert flows to Mermaid diagrams and export to SVG/PNG
+- **Code Converter** - Convert existing Python code to Taskinity flows
+- **Data Processors** - Tools for working with CSV, JSON, and databases
+- **API Clients** - Clients for REST, GraphQL, and WebSocket APIs
+
+### Examples
+
+Taskinity includes a variety of examples in the `examples` directory:
+
+- **Email Processing** - Process emails from IMAP servers with Docker configuration
+- **Data Processing** - Process data from various sources with PostgreSQL integration
+- **API Integration** - Connect to external APIs with a mock server for testing
+- **Visualization** - Visualize flows with Mermaid and interactive diagrams
+- **Parallel Tasks** - Optimize performance with parallel task execution
+
+## DSL Specification
+
+### Syntax Elements:
+
+- **flow [FlowName]:** - Flow definition with name
+- **description:** - Optional flow description
+- **[source_task] -> [target_task]** - Definition of connection between tasks
 - **[zadanie_źródłowe] -> [zadanie1, zadanie2]** - Połączenie jednego zadania z wieloma zadaniami
 
 ### Przykład:
@@ -134,93 +155,95 @@ flow EmailProcessing:
     process_regular_emails -> send_responses
 ```
 
-## Przykłady użycia
+## Examples
 
-### Przykład 1: Przetwarzanie e-maili
+Taskinity includes a variety of examples in the `examples` directory. Each example is self-contained with its own README, configuration files, and Docker setup where applicable.
+
+### Email Processing
 
 ```python
-from flow_dsl import task, flow, run_flow_from_dsl
+from taskinity import task, run_flow_from_dsl
 
-@task(name="Pobieranie e-maili")
+@task(name="Fetch Emails")
 def fetch_emails(server, username, password):
-    # Implementacja
-    return emails
+    # Implementation
+    return ["Email 1", "Email 2"]
 
-@task(name="Klasyfikacja e-maili")
+@task(name="Classify Emails")
 def classify_emails(emails):
-    urgent = [email for email in emails if email.get("urgent", False)]
-    regular = [email for email in emails if not email.get("urgent", False)]
+    # Implementation
+    urgent = [e for e in emails if "URGENT" in e]
+    regular = [e for e in emails if "URGENT" not in e]
     return {"urgent_emails": urgent, "regular_emails": regular}
 
-@task(name="Przetwarzanie pilnych e-maili")
+@task(name="Process Urgent Emails")
 def process_urgent_emails(urgent_emails):
-    # Implementacja
-    return ["Odpowiedź na pilny e-mail" for _ in urgent_emails]
+    # Implementation
+    return ["Response to urgent email" for _ in urgent_emails]
 
-@task(name="Przetwarzanie zwykłych e-maili")
+@task(name="Process Regular Emails")
 def process_regular_emails(regular_emails):
-    # Implementacja
-    return ["Odpowiedź na zwykły e-mail" for _ in regular_emails]
+    # Implementation
+    return ["Response to regular email" for _ in regular_emails]
 
-# Definicja przepływu DSL
+# Flow definition using DSL
 email_dsl = """
 flow EmailProcessing:
-    description: "Przetwarzanie e-maili"
+    description: "Email Processing Flow"
     fetch_emails -> classify_emails
     classify_emails -> process_urgent_emails
     classify_emails -> process_regular_emails
 """
 
-# Uruchomienie przepływu
+# Run the flow
 results = run_flow_from_dsl(email_dsl, {
     "server": "imap.example.com",
-    "username": "info@softreck.dev",
+    "username": "user@example.com",
     "password": "password123"
 })
 ```
 
-### Przykład 2: Przetwarzanie danych z walidacją
+### Data Analysis with Validation
 
 ```python
-from flow_dsl import task, run_flow_from_dsl
+from taskinity import task, run_flow_from_dsl
 
-# Funkcje walidacji
 def validate_input_data(data):
     if not isinstance(data, list):
-        raise ValueError("Dane wejściowe muszą być listą")
+        raise ValueError("Input data must be a list")
     if len(data) == 0:
-        raise ValueError("Lista danych nie może być pusta")
+        raise ValueError("Data list cannot be empty")
 
 def validate_output_data(result):
     if not isinstance(result, dict):
-        raise ValueError("Wynik musi być słownikiem")
-    if "summary" not in result:
-        raise ValueError("Wynik musi zawierać klucz 'summary'")
+        raise ValueError("Result must be a dictionary")
+    if "summary" not in result or "average" not in result:
+        raise ValueError("Result must contain 'summary' and 'average' keys")
 
-@task(name="Pobieranie danych", validate_output=validate_input_data)
+@task(name="Fetch Data")
 def fetch_data():
-    # Implementacja
+    # Implementation
     return [1, 2, 3, 4, 5]
 
-@task(name="Analiza danych", validate_input=validate_input_data, validate_output=validate_output_data)
+@task(name="Analyze Data", validate_input=validate_input_data, validate_output=validate_output_data)
 def analyze_data(data):
-    # Implementacja
+    # Implementation
     return {"summary": sum(data), "average": sum(data) / len(data)}
 
-# Definicja przepływu DSL
+# Flow definition using DSL
 data_dsl = """
 flow DataAnalysis:
-    description: "Analiza danych z walidacją"
+    description: "Data Analysis with Validation"
     fetch_data -> analyze_data
 """
 
-# Uruchomienie przepływu
+# Run the flow
 results = run_flow_from_dsl(data_dsl, {})
 ```
 
 ## Wizualizacja przepływów
 
-taskinity zawiera proste narzędzia do wizualizacji przepływów:
+Taskinity zawiera proste narzędzia do wizualizacji przepływów:
 
 ```python
 # Wizualizacja definicji DSL
@@ -233,9 +256,9 @@ python visualize_flow.py flow [flow_id] --output execution_diagram.png
 python visualize_flow.py list --flows
 ```
 
-## Monitorowanie i logi
+## Monitoring and Logs
 
-taskinity automatycznie zapisuje logi wykonania przepływów w katalogu `logs/`. Można je łatwo przeglądać za pomocą standardowych narzędzi:
+Taskinity automatycznie zapisuje logi wykonania przepływów w katalogu `logs/`. Można je łatwo przeglądać za pomocą standardowych narzędzi:
 
 ```python
 # Wyświetlenie logów dla konkretnego przepływu
@@ -268,7 +291,7 @@ def view_flow_logs(flow_id):
             print(f"  - {task_data['name']} (Status: {task_data['status']}, Czas: {task_data.get('duration', 'N/A')} sekund)")
 ```
 
-## Analiza Porównawcza Frameworków Orchestracji w Pythonie
+## Comparison with Other Frameworks
 
 ### Tabela Porównawcza Frameworków
 
@@ -618,17 +641,72 @@ list_flows()
 
 Zwraca listę wszystkich wykonanych przepływów.
 
-## Rozszerzenia i ulepszenia
+## Extensions and Plugins
 
-1. **Dashboard webowy** - interaktywna wizualizacja przepływów i ich statusu
-2. **Walidacja typów** - automatyczna walidacja typów danych wejściowych/wyjściowych
-3. **Równoległe wykonanie** - możliwość równoległego wykonania niezależnych zadań
-4. **Obsługa błędów** - mechanizmy ponownych prób i obsługi wyjątków
-5. **Zaplanowane wykonanie** - mechanizm planowania wykonania przepływów
-6. **Integracje** - dodanie konectorów do popularnych systemów
-7. **Persystencja** - zapisywanie stanu przepływów w bazie danych
-8. **API REST** - udostępnienie API do zarządzania przepływami
+Taskinity follows a modular architecture where core functionality can be extended with plugins. The following extensions are available:
 
-## Licencja
+### Visualization Extensions
 
-[LICENSE](LICENSE)
+```python
+from taskinity.extensions.mermaid_converter import convert_to_mermaid, export_as_svg
+
+# Convert flow to Mermaid diagram
+mermaid_code = convert_to_mermaid(flow_dsl)
+
+# Export to SVG
+svg_file = export_as_svg(mermaid_code, "flow_diagram.svg")
+```
+
+### Code Converter
+
+```python
+from taskinity.extensions.code_converter import convert_code_to_taskinity
+
+# Convert existing Python code to Taskinity flow
+dsl_text = convert_code_to_taskinity("path/to/script.py", "output_flow.dsl")
+```
+
+### Data Processors
+
+```python
+from taskinity.data_processors import CSVProcessor, JSONProcessor, DatabaseProcessor
+
+# Process CSV data
+csv_processor = CSVProcessor()
+data = csv_processor.read("data.csv")
+transformed_data = csv_processor.transform(data, lambda x: x * 2)
+csv_processor.write(transformed_data, "output.csv")
+```
+
+### API Clients
+
+```python
+from taskinity.api_client import RESTClient, GraphQLClient
+
+# Use REST client
+rest_client = RESTClient("https://api.example.com")
+response = rest_client.get("users")
+
+# Use GraphQL client
+graphql_client = GraphQLClient("https://api.example.com/graphql")
+response = graphql_client.query("""
+    query {
+        users {
+            id
+            name
+        }
+    }
+""")
+```
+
+### Future Extensions
+
+1. **Web Dashboard** - interactive visualization of flows and their status
+2. **Type Validation** - automatic validation of input/output data types
+3. **Error Handling** - retry mechanisms and exception handling
+4. **Persistence** - saving flow state in a database
+5. **REST API** - API for managing flows
+
+## License
+
+[Apache License](LICENSE)
