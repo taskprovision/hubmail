@@ -721,3 +721,63 @@ response = graphql_client.query("""
 ## License
 
 [Apache License](LICENSE)
+
+<!-- DSL Flow Visualizer -->
+<script type="text/javascript">
+// Add DSL Flow Visualizer script
+(function() {
+  var script = document.createElement('script');
+  script.src = '/static/js/dsl-flow-visualizer.js';
+  script.async = true;
+  script.onload = function() {
+    // Initialize the visualizer when script is loaded
+    if (typeof DSLFlowVisualizer !== 'undefined') {
+      new DSLFlowVisualizer();
+    }
+  };
+  document.head.appendChild(script);
+  
+  // Add CSS styles
+  var style = document.createElement('style');
+  style.textContent = `
+    .dsl-flow-diagram {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      overflow-x: auto;
+    }
+    
+    .dsl-download-btn {
+      background-color: #4682b4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .dsl-download-btn:hover {
+      background-color: #36648b;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Add language class to DSL code blocks if not already present
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('pre code').forEach(function(codeBlock) {
+      var content = codeBlock.textContent.trim();
+      if (content.startsWith('flow ') && !codeBlock.classList.contains('language-dsl')) {
+        codeBlock.classList.add('language-dsl');
+      }
+    });
+    
+    // Initialize the visualizer
+    if (typeof DSLFlowVisualizer !== 'undefined') {
+      new DSLFlowVisualizer();
+    }
+  });
+})();
+</script>
